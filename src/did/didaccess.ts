@@ -231,7 +231,6 @@ export class DIDAccess {
             let mnemonic = await new Mnemonic(language).generate();
             let didStoreId = Utils.generateRandomDIDStoreId();
 
-            DIDBackend.initialize(new ElastosIODIDAdapter(ElastosIODIDAdapterMode.DEVNET));
             let didStore = await DIDStore.open("connectivitysdk");
 
             // Store created, now init the root identity
