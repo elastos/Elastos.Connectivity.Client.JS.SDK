@@ -4,7 +4,17 @@ import type { ILogger } from "../../interfaces/ilogger";
 import { DefaultKeyValueStorage } from "../../internal/defaultkeyvaluestorage";
 import { globalLoggerService as  logger } from "../../services/global.logger.service";
 
-declare let hiveManager: HivePlugin.HiveManager;
+// TMP FAKE STUBS
+namespace HivePlugin {
+    export type JSONObject = any;
+    export type EnhancedError = any;
+    export class Vault {
+        getDatabase(): any {}
+    }
+
+    export function errorOfType(a, b): boolean { return false; }
+}
+
 
 export class SyncContext {
     name: string;
@@ -478,7 +488,7 @@ export class HiveDataSync {
             return entries;
         }
         catch (err) {
-            if (hiveManager.errorOfType(err, "COLLECTION_NOT_FOUND")) {
+            if (HivePlugin.errorOfType(err, "COLLECTION_NOT_FOUND")) {
                 this.logDebug("Backup collection does not exist on the vault yet, thus no modified entries returned");
                 return [];
             }

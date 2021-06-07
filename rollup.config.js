@@ -24,6 +24,11 @@ export default {
             file: 'dist.esm/index.js'
         }
     ],
+	external: [
+		"@elastosfoundation/did-js-sdk",
+		"moment",
+		"rxjs"
+	],
 	plugins: [
 		svelte({
             preprocess: sveltePreprocess({ sourceMap: !production }),

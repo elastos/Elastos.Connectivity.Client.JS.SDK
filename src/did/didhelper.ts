@@ -1,8 +1,10 @@
 import { Utils } from "./utils";
 import { globalStorageService } from "../services/global.storage.service";
 import type { IConnector } from "../interfaces/connectors";
+import {
+    DIDStore
+} from "@elastosfoundation/did-js-sdk";
 import type {
-    DIDStore,
     DID,
     VerifiableCredential
 } from "@elastosfoundation/did-js-sdk";
@@ -41,12 +43,14 @@ export class DIDHelper {
      * Convenient way to open a DID store from its ID
      */
     public static openDidStore(storeId: string): Promise<DIDStore> {
-        return new Promise((resolve)=>{
-            didManager.initDidStore(storeId, null, (didstore)=>{
-            resolve(didstore);
-            }, (err)=>{
-            resolve(null);
-            })
+        return new Promise(async (resolve)=>{
+            try {
+                let didStore = await DIDStore.open(storeId);
+                resolve(didStore);
+            }
+            catch (e) {
+                resolve(null);
+            }
         });
     }
 
@@ -54,23 +58,30 @@ export class DIDHelper {
      * Convenient way to load a DID.
      */
     public static loadDID(didStore: DIDStore, didString: string): Promise<DID> {
-        return new Promise((resolve, reject)=>{
-            didStore.loadDidDocument(didString, (didDocument)=>{
+        return new Promise(async (resolve, reject)=>{
+            try {
+                let didDocument = await didStore.loadDid(didString);
                 resolve(didDocument.getSubject());
-            }, (err)=>{
+            }
+            catch(err) {
                 reject(err);
-            })
+            };
         });
     }
 
-
-    public static loadDIDCredentials(did: DID): Promise<VerifiableCredential[]> {
-        return new Promise((resolve, reject)=>{
-            did.loadCredentials((credentials)=>{
+    public static loadDIDCredentials(didStore: DIDStore, did: DID): Promise<VerifiableCredential[]> {
+        return new Promise(async (resolve, reject)=>{
+            try {
+                let credentialUrls = await didStore.listCredentials(did.toString());
+                let credentials: VerifiableCredential[] = [];
+                for (let url of credentialUrls) {
+                    credentials.push(await didStore.loadCredential(url));
+                }
                 resolve(credentials);
-            }, (err)=> {
-                reject(err);
-            })
+            }
+            catch (e) {
+                reject(e);
+            }
         });
     }
 }

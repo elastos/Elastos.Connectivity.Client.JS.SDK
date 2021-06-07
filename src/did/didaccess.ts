@@ -19,12 +19,8 @@ import {
     JSONObject,
     DefaultDIDAdapter
 } from "@elastosfoundation/did-js-sdk";
-
-class EmptyDIDAdapter extends DefaultDIDAdapter {
-    constructor() {
-        super("http://52.80.107.251:1111"); // TODO: ADD AN API TO LET THE APP CHOOSE MAINNET, TESTNET OR PRIVNET
-    }
-}
+import type { ImportedCredential } from "../interfaces/connectors/ididconnectorapi";
+import { ElastosIODIDAdapter, ElastosIODIDAdapterMode } from "./elastosiodidadapter";
 
 export class DIDAccess {
     private helper: DIDHelper = null;
@@ -33,6 +29,12 @@ export class DIDAccess {
         this.helper = new DIDHelper();
     }
 
+    /**
+     * Gets credentials from user identity, based on the requested GetCredentialsQuery. Claims format is available
+     * on the elastos developer portal and can be optional or mandatory.
+     * A DID Verifiable Presentation is returned, including the list of related credentials found
+     * in user's identity wallet.
+     */
     public async getCredentials(query: GetCredentialsQuery): Promise<VerifiablePresentation> {
         return new Promise((resolve)=>{
             ConnectivityHelper.ensureActiveConnector(async ()=>{
@@ -44,6 +46,37 @@ export class DIDAccess {
         });
     }
 
+    /**
+     * Sends one or more verifiable credentials to the identity wallet, so that user can decide to
+     * import them to his DID profile and optionally publish those credentials as part of his public
+     * DID Document.
+     * The identity wallet application may display a summary of the credentails contents so that user
+     * can review them before accepting to import them.
+     *
+     * The list of credentials that were accepted and imported by the user are returned.
+     */
+    public async importCredentials(credentials: VerifiableCredential[]): Promise<ImportedCredential[]> {
+        return new Promise((resolve)=>{
+            ConnectivityHelper.ensureActiveConnector(async ()=>{
+                let importedCredentials = await connectivity.getActiveConnector().importCredentials(credentials);
+                resolve(importedCredentials);
+            }, ()=>{
+                resolve(null);
+            });
+        });
+    }
+
+    /**
+     * Requests user's identity wallet to generate a special "app ID" credential. This credential is used
+     * to authorize an application to access some kind of information after prooving who it is.
+     * For example, this credential is used by the hive authentication, in order to let apps access only
+     * the storage space sandboxed using the application DID, and not other app's storage data.
+     *
+     * This credential is sensitive and must be delivered by the identity wallet only after verifying that
+     * the requesting application is really the owner of appDID, for example by making sure that the redirect
+     * url registered in the App's DID Document (public) matches the redirect url defined to receive the response
+     * to this connector request (when a third party identity app is used).
+     */
     public async generateAppIdCredential(): Promise<VerifiableCredential> {
         return new Promise((resolve)=>{
             ConnectivityHelper.ensureActiveConnector(async ()=>{
@@ -150,7 +183,7 @@ export class DIDAccess {
                 }
 
                 // Load credentials first before being able to call getCredential().
-                await DIDHelper.loadDIDCredentials(did);
+                await DIDHelper.loadDIDCredentials(didStore, did);
 
                 resolve({
                     did: did,
@@ -198,7 +231,7 @@ export class DIDAccess {
             let mnemonic = await new Mnemonic(language).generate();
             let didStoreId = Utils.generateRandomDIDStoreId();
 
-            DIDBackend.initialize(new EmptyDIDAdapter(), );
+            DIDBackend.initialize(new ElastosIODIDAdapter(ElastosIODIDAdapterMode.DEVNET));
             let didStore = await DIDStore.open("connectivitysdk");
 
             // Store created, now init the root identity
@@ -206,17 +239,13 @@ export class DIDAccess {
             let rootIdentity = RootIdentity.createFromMnemonic(mnemonic, null, didStore, storePass);
 
             // Now add a DID
-            new DID()
-            didStore.newDid(storePass, "", (did)=>{
-                // DID added, now we can return
-                resolve({
-                    didStore: didStore,
-                    did: did,
-                    storePassword: storePass
-                });
-            }, (err)=>{
-                logger.error(err);
-                resolve(null);
+            let didDocument = await rootIdentity.newDid(storePass);
+            // DID added, now we can return
+            resolve({
+                didStoreId,
+                didStore: didStore,
+                did: didDocument.getSubject(),
+                storePassword: storePass
             });
         });
     }
@@ -226,7 +255,7 @@ export class DIDAccess {
      */
     public async createNewAppInstanceDID(): Promise<{didStore: DIDStore, did: DID}> {
         let didCreationResult = await this.fastCreateDID("ENGLISH");
-        await this.helper.saveAppInstanceDIDInfo(didCreationResult.didStore.getId(), didCreationResult.did.getDIDString(), didCreationResult.storePassword);
+        await this.helper.saveAppInstanceDIDInfo(didCreationResult.didStoreId, didCreationResult.did.toString(), didCreationResult.storePassword);
 
         return {
             didStore: didCreationResult.didStore,
