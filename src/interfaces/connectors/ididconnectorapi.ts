@@ -1,9 +1,9 @@
 import type { GetCredentialsQuery } from "../../did/model/getcredentialsquery";
 import type {
     VerifiablePresentation,
-    VerifiableCredential
+    VerifiableCredential,
+    DIDURL
 } from "@elastosfoundation/did-js-sdk";
-import type { DIDURL } from "../../../../Elastos.DID.JS.SDK/typings";
 
 export type ImportedCredential = {
     id: DIDURL; // VerifiableCredential id
