@@ -3,6 +3,8 @@ import { ConnectivityHelper } from "../internal/connectivityhelper";
 import { globalStorageService } from "../services/global.storage.service";
 import type { FastDIDCreationResult } from "./fastdidcreationresult";
 import { DIDHelper } from "./didhelper";
+import type { ImportedCredential } from "./model/importedcredential";
+import type { SignedData } from "../did/model/signeddata";
 import type { GetCredentialsQuery } from "./model/getcredentialsquery";
 import { Utils } from "./utils";
 import moment from 'moment';
@@ -19,7 +21,6 @@ import {
     JSONObject,
     DefaultDIDAdapter
 } from "@elastosfoundation/did-js-sdk";
-import type { ImportedCredential } from "../interfaces/connectors/ididconnectorapi";
 import { ElastosIODIDAdapter, ElastosIODIDAdapterMode } from "./elastosiodidadapter";
 
 export class DIDAccess {
@@ -60,6 +61,28 @@ export class DIDAccess {
             ConnectivityHelper.ensureActiveConnector(async ()=>{
                 let importedCredentials = await connectivity.getActiveConnector().importCredentials(credentials);
                 resolve(importedCredentials);
+            }, ()=>{
+                resolve(null);
+            });
+        });
+    }
+
+    /**
+     * Signs the given data with user's DID. The returned data contains a JWT string signed by user's DID.
+     * The payload in this JWT contains a field named "signature" by default, that holds the signed data, but this
+     * field named can optionally be changed.
+     *
+     * @param data Data to sign
+     * @param signatureFieldName Name of the field that holds the signature output, in the response. Useful for example to customize a generated JWT with a custom signature field name. Default: "signature".
+     * @param jwtExtra Optional JSON object that holds fields that are directly added to the resulting response / JWT. Useful for example to send server side challenges back, or other custom application data.
+     */
+    public async signData(data: string, jwtExtra?: any, signatureFieldName?: string): Promise<SignedData> {
+        return new Promise((resolve)=>{
+            ConnectivityHelper.ensureActiveConnector(async ()=>{
+                let signedData = await connectivity.getActiveConnector().signData(
+                    data, jwtExtra, signatureFieldName
+                );
+                resolve(signedData);
             }, ()=>{
                 resolve(null);
             });

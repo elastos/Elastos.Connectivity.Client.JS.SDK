@@ -1,5 +1,5 @@
 import type { IConnector } from "./iconnector";
-import type { IDIDConnectorAPI, ImportedCredential } from "./ididconnectorapi";
+import type { IDIDConnectorAPI } from "./ididconnectorapi";
 import type { IWalletConnectorAPI } from "./iwalletconnectorapi";
 
 export type {
@@ -8,8 +8,5 @@ export type {
 
     // Main connector interfaces
     IDIDConnectorAPI,
-    IWalletConnectorAPI,
-
-    // Sub-types
-    ImportedCredential
+    IWalletConnectorAPI
 }

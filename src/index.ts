@@ -15,7 +15,7 @@ import { GenericUIHandler } from "./internal/defaultui/genericuihandler";
 connectivity.setGenericUIHandler(new GenericUIHandler());
 
 export {
-    // Interfaces
+    // Interfaces implemented by connectors
     Interfaces,
 
     // Classes
