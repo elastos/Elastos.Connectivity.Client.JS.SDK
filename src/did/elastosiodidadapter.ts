@@ -16,10 +16,10 @@ export class ElastosIODIDAdapter extends DefaultDIDAdapter {
         let resolverUrl = null;
         switch (mode) {
             case ElastosIODIDAdapterMode.MAINNET:
-                resolverUrl = "https://api.elastos.io/did/v2";
+                resolverUrl = "https://api.elastos.io/eid";
                 break;
             case ElastosIODIDAdapterMode.TESTNET:
-                resolverUrl = "https://api-testnet.elastos.io/did/v2";
+                resolverUrl = "https://api-testnet.elastos.io/eid";
                 break;
             case ElastosIODIDAdapterMode.DEVNET:
                 resolverUrl = "https://api-testnet.elastos.io/newid"; // TODO: TEMPORARY URL DURING DID JS SDK DEV
