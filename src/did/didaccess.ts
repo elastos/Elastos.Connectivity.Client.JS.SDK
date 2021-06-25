@@ -8,7 +8,7 @@ import type { SignedData } from "../did/model/signeddata";
 import type { GetCredentialsQuery } from "./model/getcredentialsquery";
 import { Utils } from "./utils";
 import moment from 'moment';
-import { globalLoggerService as  logger } from "../services/global.logger.service";
+import { globalLoggerService as logger } from "../services/global.logger.service";
 import {
     VerifiablePresentation,
     VerifiableCredential,
@@ -22,6 +22,7 @@ import {
     DefaultDIDAdapter
 } from "@elastosfoundation/did-js-sdk";
 import { ElastosIODIDAdapter, ElastosIODIDAdapterMode } from "./elastosiodidadapter";
+import type { ImportCredentialOptions } from "./model/importcredentialoptions";
 
 export class DIDAccess {
     private helper: DIDHelper = null;
@@ -37,11 +38,11 @@ export class DIDAccess {
      * in user's identity wallet.
      */
     public async getCredentials(query: GetCredentialsQuery): Promise<VerifiablePresentation> {
-        return new Promise((resolve)=>{
-            ConnectivityHelper.ensureActiveConnector(async ()=>{
+        return new Promise((resolve) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
                 let presentation = await connectivity.getActiveConnector().getCredentials(query);
                 resolve(presentation);
-            }, ()=>{
+            }, () => {
                 resolve(null);
             });
         });
@@ -56,12 +57,12 @@ export class DIDAccess {
      *
      * The list of credentials that were accepted and imported by the user are returned.
      */
-    public async importCredentials(credentials: VerifiableCredential[]): Promise<ImportedCredential[]> {
-        return new Promise((resolve)=>{
-            ConnectivityHelper.ensureActiveConnector(async ()=>{
-                let importedCredentials = await connectivity.getActiveConnector().importCredentials(credentials);
+    importCredentials(credentials: VerifiableCredential[], options?: ImportCredentialOptions): Promise<ImportedCredential[]> {
+        return new Promise((resolve) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
+                let importedCredentials = await connectivity.getActiveConnector().importCredentials(credentials, options);
                 resolve(importedCredentials);
-            }, ()=>{
+            }, () => {
                 resolve(null);
             });
         });
@@ -77,13 +78,13 @@ export class DIDAccess {
      * @param jwtExtra Optional JSON object that holds fields that are directly added to the resulting response / JWT. Useful for example to send server side challenges back, or other custom application data.
      */
     public async signData(data: string, jwtExtra?: any, signatureFieldName?: string): Promise<SignedData> {
-        return new Promise((resolve)=>{
-            ConnectivityHelper.ensureActiveConnector(async ()=>{
+        return new Promise((resolve) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
                 let signedData = await connectivity.getActiveConnector().signData(
                     data, jwtExtra, signatureFieldName
                 );
                 resolve(signedData);
-            }, ()=>{
+            }, () => {
                 resolve(null);
             });
         });
@@ -101,8 +102,8 @@ export class DIDAccess {
      * to this connector request (when a third party identity app is used).
      */
     public async generateAppIdCredential(): Promise<VerifiableCredential> {
-        return new Promise((resolve)=>{
-            ConnectivityHelper.ensureActiveConnector(async ()=>{
+        return new Promise((resolve) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
                 let storedAppInstanceDID = await this.getOrCreateAppInstanceDID();
                 if (!storedAppInstanceDID) {
                     resolve(null);
@@ -129,7 +130,7 @@ export class DIDAccess {
                 // appDid
 
                 resolve(credential);
-            }, ()=>{
+            }, () => {
                 resolve(null);
             });
         });
@@ -151,7 +152,7 @@ export class DIDAccess {
 
         logger.log("App Instance DID:", appInstanceDID);
 
-        let credential = await storedAppInstanceDID.didStore.loadCredential(appInstanceDID.toString()+"#app-id-credential");
+        let credential = await storedAppInstanceDID.didStore.loadCredential(appInstanceDID.toString() + "#app-id-credential");
         if (credential) {
             // If the credential exists but expiration date it too close, delete the current one to force generating a
             // new one.
@@ -173,14 +174,14 @@ export class DIDAccess {
      * Get the existing application instance DID if it was created before. Otherwise, a new app instance
      * DID is created and the information is stored in persistent storage for later use.
      */
-    public async getOrCreateAppInstanceDID(): Promise<{did: DID, didStore: DIDStore}> {
+    public async getOrCreateAppInstanceDID(): Promise<{ did: DID, didStore: DIDStore }> {
         let didStore: DIDStore = null;
         let did: DID = null;
 
         logger.log("Getting or creating app instance DID");
 
-        return new Promise((resolve)=>{
-            ConnectivityHelper.ensureActiveConnector(async ()=>{
+        return new Promise((resolve) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
                 // Check if we have a app instance DID store saved in our local storage (app manager settings)
                 let appInstanceDIDInfo = await this.getExistingAppInstanceDIDInfo();
                 if (appInstanceDIDInfo) {
@@ -212,17 +213,17 @@ export class DIDAccess {
                     did: did,
                     didStore: didStore
                 });
-            }, ()=>{
+            }, () => {
                 // Cancelled
                 resolve(null);
             });
         });
     }
 
-     /**
-     * Retrieve information about existing app instance info from permanent storage, if any.
-     */
-    public async getExistingAppInstanceDIDInfo(): Promise<{storeId: string, didString: string, storePassword: string}> {
+    /**
+    * Retrieve information about existing app instance info from permanent storage, if any.
+    */
+    public async getExistingAppInstanceDIDInfo(): Promise<{ storeId: string, didString: string, storePassword: string }> {
         let storeId = await globalStorageService.get("dappsdk_appinstancedidstoreid", null, true)
         let didString = await globalStorageService.get("dappsdk_appinstancedidstring", null, true)
         let storePassword = await globalStorageService.get("dappsdk_appinstancedidstorepassword", null, true)
@@ -248,9 +249,9 @@ export class DIDAccess {
      * for convenience.
      */
     public fastCreateDID(language: string): Promise<FastDIDCreationResult> {
-        logger.log("Fast DID creation with language "+language);
+        logger.log("Fast DID creation with language " + language);
 
-        return new Promise(async (resolve, reject)=>{
+        return new Promise(async (resolve, reject) => {
             let mnemonic = await new Mnemonic(language).generate();
             let didStoreId = Utils.generateRandomDIDStoreId();
 
@@ -275,7 +276,7 @@ export class DIDAccess {
     /**
      * Creates a new application instance DID store, DID, and saves info to permanent storage.
      */
-    public async createNewAppInstanceDID(): Promise<{didStore: DIDStore, did: DID}> {
+    public async createNewAppInstanceDID(): Promise<{ didStore: DIDStore, did: DID }> {
         let didCreationResult = await this.fastCreateDID("ENGLISH");
         await this.helper.saveAppInstanceDIDInfo(didCreationResult.didStoreId, didCreationResult.did.toString(), didCreationResult.storePassword);
 

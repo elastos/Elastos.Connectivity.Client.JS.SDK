@@ -6,10 +6,11 @@ import type {
 import type { ImportedCredential } from "../../did/model/importedcredential";
 import type { GetCredentialsQuery } from "../../did/model/getcredentialsquery";
 import type { SignedData } from "../../did/model/signeddata";
+import type { ImportCredentialOptions } from "../../did/model/importcredentialoptions";
 
 export interface IDIDConnectorAPI {
     getCredentials(query: GetCredentialsQuery): Promise<VerifiablePresentation>;
-    importCredentials(credentials: VerifiableCredential[]): Promise<ImportedCredential[]>;
+    importCredentials(credentials: VerifiableCredential[], options?: ImportCredentialOptions): Promise<ImportedCredential[]>;
     signData(data: string, jwtExtra?: any, signatureFieldName?: string): Promise<SignedData>;
 
     /**

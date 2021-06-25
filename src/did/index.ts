@@ -4,6 +4,7 @@ import type { FastDIDCreationResult } from "./fastdidcreationresult";
 import type { UICustomization,  GetCredentialsQuery } from "./model/getcredentialsquery";
 import { ElastosIODIDAdapter, ElastosIODIDAdapterMode } from "./elastosiodidadapter";
 import type { ImportedCredential } from "./model/importedcredential";
+import type { ImportCredentialOptions } from "./model/importcredentialoptions";
 import type { SignedData } from "../did/model/signeddata";
 
 export type {
@@ -11,6 +12,7 @@ export type {
     UICustomization,
     GetCredentialsQuery,
     ImportedCredential,
+    ImportCredentialOptions,
     SignedData
 }
 

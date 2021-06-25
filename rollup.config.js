@@ -13,17 +13,17 @@ const production = !process.env.ROLLUP_WATCH;
 export default {
 	input: 'src/index.ts',
 	output: [
-        {
-            sourcemap: true,
-            format: 'cjs',
-            file: 'dist/index.js'
-        },
-        {
-            sourcemap: true,
-            format: 'es',
-            file: 'dist.esm/index.js'
-        }
-    ],
+		{
+			sourcemap: true,
+			format: 'cjs',
+			file: 'dist/index.js'
+		},
+		{
+			sourcemap: true,
+			format: 'es',
+			file: 'dist.esm/index.js'
+		}
+	],
 	external: [
 		"@elastosfoundation/did-js-sdk",
 		"moment",
@@ -31,7 +31,7 @@ export default {
 	],
 	plugins: [
 		svelte({
-            preprocess: sveltePreprocess({ sourceMap: !production }),
+			preprocess: sveltePreprocess({ sourceMap: !production }),
 			compilerOptions: {
 				// enable run-time checks when not in production
 				dev: !production
@@ -39,8 +39,8 @@ export default {
 		}),
 
 		postcss({
-            extract: 'bundle.css'
-        }),
+			extract: 'bundle.css'
+		}),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
@@ -52,19 +52,19 @@ export default {
 			dedupe: ['svelte']
 		}),
 		commonjs(),
-        typescript({
+		typescript({
 			declaration: false,
-            sourceMap: true,
-            inlineSources: !production
-        }),
+			sourceMap: true,
+			inlineSources: !production
+		}),
 
 		// If we're building for production (npm run build
 		// instead of npm run dev), minify
 		production && terser(),
 
-        /*analyze({
-            limit: 10
-        })*/
+		/*analyze({
+				limit: 10
+		})*/
 	],
 	watch: {
 		clearScreen: true
