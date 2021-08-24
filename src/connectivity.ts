@@ -89,6 +89,11 @@ class Connectivity {
     }
 
     public getActiveConnector(): IConnector | null {
+        // For now, is a elastos provider is injected in window.elastos, we always use it by
+        // default.
+        if ("elastos" in window)
+            return window["elastos"];
+
         return this.activeConnector;
     }
 

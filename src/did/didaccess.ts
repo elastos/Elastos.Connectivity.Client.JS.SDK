@@ -252,10 +252,10 @@ export class DIDAccess {
         logger.log("Fast DID creation with language " + language);
 
         return new Promise(async (resolve, reject) => {
-            let mnemonic = await new Mnemonic(language).generate();
+            let mnemonic = await Mnemonic.getInstance(language).generate();
             let didStoreId = Utils.generateRandomDIDStoreId();
 
-            let didStore = await DIDStore.open("connectivitysdk");
+            let didStore = await DIDStore.open(didStoreId);
 
             // Store created, now init the root identity
             let storePass = this.helper.generateRandomPassword();
@@ -277,7 +277,7 @@ export class DIDAccess {
      * Creates a new application instance DID store, DID, and saves info to permanent storage.
      */
     public async createNewAppInstanceDID(): Promise<{ didStore: DIDStore, did: DID }> {
-        let didCreationResult = await this.fastCreateDID("ENGLISH");
+        let didCreationResult = await this.fastCreateDID(Mnemonic.ENGLISH);
         await this.helper.saveAppInstanceDIDInfo(didCreationResult.didStoreId, didCreationResult.did.toString(), didCreationResult.storePassword);
 
         return {

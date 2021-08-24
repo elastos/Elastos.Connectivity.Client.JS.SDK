@@ -16,6 +16,8 @@ export class DIDHelper {
      * Saves app instance did info to permanent storage.
      */
     public async saveAppInstanceDIDInfo(storeId: string, didString: string, storePassword: string): Promise<void> {
+        console.log("Saving app instance DID info for store "+storeId+" and did "+didString);
+
         await globalStorageService.set("dappsdk_appinstancedidstoreid", storeId, true);
         await globalStorageService.set("dappsdk_appinstancedidstring", didString, true);
         // TODO: Devices with biometric auth enabled may use the password manager to save this password
@@ -61,7 +63,10 @@ export class DIDHelper {
         return new Promise(async (resolve, reject)=>{
             try {
                 let didDocument = await didStore.loadDid(didString);
-                resolve(didDocument.getSubject());
+                if (!didDocument)
+                    reject("Null DIDDocument loaded for did string "+didStore);
+                else
+                    resolve(didDocument.getSubject());
             }
             catch(err) {
                 reject(err);
