@@ -1,28 +1,21 @@
-import { connectivity } from "../connectivity";
-import { ConnectivityHelper } from "../internal/connectivityhelper";
-import { globalStorageService } from "../services/global.storage.service";
-import type { FastDIDCreationResult } from "./fastdidcreationresult";
-import { DIDHelper } from "./didhelper";
-import type { ImportedCredential } from "./model/importedcredential";
-import type { SignedData } from "../did/model/signeddata";
-import type { GetCredentialsQuery } from "./model/getcredentialsquery";
-import { Utils } from "./utils";
-import moment from 'moment';
-import { globalLoggerService as logger } from "../services/global.logger.service";
 import {
-    VerifiablePresentation,
-    VerifiableCredential,
     DID,
     DIDStore,
     Mnemonic,
-    RootIdentity,
-    DIDBackend,
-    DIDAdapter,
-    JSONObject,
-    DefaultDIDAdapter
+    RootIdentity, VerifiableCredential, VerifiablePresentation
 } from "@elastosfoundation/did-js-sdk";
-import { ElastosIODIDAdapter, ElastosIODIDAdapterMode } from "./elastosiodidadapter";
+import moment from 'moment';
+import { connectivity } from "../connectivity";
+import type { SignedData } from "../did/model/signeddata";
+import { ConnectivityHelper } from "../internal/connectivityhelper";
+import { globalLoggerService as logger } from "../services/global.logger.service";
+import { globalStorageService } from "../services/global.storage.service";
+import { DIDHelper } from "./didhelper";
+import type { FastDIDCreationResult } from "./fastdidcreationresult";
+import type { GetCredentialsQuery } from "./model/getcredentialsquery";
 import type { ImportCredentialOptions } from "./model/importcredentialoptions";
+import type { ImportedCredential } from "./model/importedcredential";
+import { Utils } from "./utils";
 
 export class DIDAccess {
     private helper: DIDHelper = null;
@@ -62,6 +55,28 @@ export class DIDAccess {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 let importedCredentials = await connectivity.getActiveConnector().importCredentials(credentials, options);
                 resolve(importedCredentials);
+            }, () => {
+                resolve(null);
+            });
+        });
+    }
+
+    /**
+     * Deletes one or more credentials from user identity, base on a credential ID.
+     * Returns the list of credential IDs that were actually deleted from user's identity.
+     */
+    public async deleteCredentials(credentialIds: string | string[]): Promise<string[]> {
+        // Rebuild an array if it's not one.
+        let realCredentialIds: string[];
+        if (typeof credentialIds === "string")
+            realCredentialIds = [credentialIds];
+        else
+            realCredentialIds = credentialIds;
+
+        return new Promise((resolve) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
+                let deletionList = await connectivity.getActiveConnector().deleteCredentials(realCredentialIds);
+                resolve(deletionList);
             }, () => {
                 resolve(null);
             });

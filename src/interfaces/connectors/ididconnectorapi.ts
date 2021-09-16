@@ -1,16 +1,16 @@
 import type {
-    VerifiablePresentation,
-    VerifiableCredential
+    VerifiableCredential, VerifiablePresentation
 } from "@elastosfoundation/did-js-sdk";
-
-import type { ImportedCredential } from "../../did/model/importedcredential";
 import type { GetCredentialsQuery } from "../../did/model/getcredentialsquery";
-import type { SignedData } from "../../did/model/signeddata";
 import type { ImportCredentialOptions } from "../../did/model/importcredentialoptions";
+import type { ImportedCredential } from "../../did/model/importedcredential";
+import type { SignedData } from "../../did/model/signeddata";
+
 
 export interface IDIDConnectorAPI {
     getCredentials(query: GetCredentialsQuery): Promise<VerifiablePresentation>;
     importCredentials(credentials: VerifiableCredential[], options?: ImportCredentialOptions): Promise<ImportedCredential[]>;
+    deleteCredentials(credentialIds: string[]): Promise<string[]>;
     signData(data: string, jwtExtra?: any, signatureFieldName?: string): Promise<SignedData>;
 
     /**
