@@ -12,6 +12,7 @@ import { globalLoggerService as logger } from "../services/global.logger.service
 import { globalStorageService } from "../services/global.storage.service";
 import { DIDHelper } from "./didhelper";
 import type { FastDIDCreationResult } from "./fastdidcreationresult";
+import type { DeleteCredentialOptions } from "./model/deletecredentialoptions";
 import type { GetCredentialsQuery } from "./model/getcredentialsquery";
 import type { ImportCredentialOptions } from "./model/importcredentialoptions";
 import type { ImportedCredential } from "./model/importedcredential";
@@ -65,7 +66,7 @@ export class DIDAccess {
      * Deletes one or more credentials from user identity, base on a credential ID.
      * Returns the list of credential IDs that were actually deleted from user's identity.
      */
-    public async deleteCredentials(credentialIds: string | string[]): Promise<string[]> {
+    public async deleteCredentials(credentialIds: string | string[], options?: DeleteCredentialOptions): Promise<string[]> {
         // Rebuild an array if it's not one.
         let realCredentialIds: string[];
         if (typeof credentialIds === "string")
@@ -75,7 +76,7 @@ export class DIDAccess {
 
         return new Promise((resolve) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let deletionList = await connectivity.getActiveConnector().deleteCredentials(realCredentialIds);
+                let deletionList = await connectivity.getActiveConnector().deleteCredentials(realCredentialIds, options);
                 resolve(deletionList);
             }, () => {
                 resolve(null);
@@ -99,6 +100,23 @@ export class DIDAccess {
                     data, jwtExtra, signatureFieldName
                 );
                 resolve(signedData);
+            }, () => {
+                resolve(null);
+            });
+        });
+    }
+
+    /**
+     * Requests user to publish his current DID Document on chain, without making any change,
+     * simply to make sure everything is up to date.
+     *
+     * Returns the transaction ID, if the document was published.
+     */
+    public async requestPublish(): Promise<string> {
+        return new Promise((resolve) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
+                let txId = await connectivity.getActiveConnector().requestPublish();
+                resolve(txId);
             }, () => {
                 resolve(null);
             });

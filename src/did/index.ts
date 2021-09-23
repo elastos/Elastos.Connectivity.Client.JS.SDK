@@ -1,11 +1,12 @@
+import type { SignedData } from "../did/model/signeddata";
 import { DIDAccess } from "./didaccess";
 import { DIDHelper } from "./didhelper";
-import type { FastDIDCreationResult } from "./fastdidcreationresult";
-import type { UICustomization,  GetCredentialsQuery } from "./model/getcredentialsquery";
 import { ElastosIODIDAdapter, ElastosIODIDAdapterMode } from "./elastosiodidadapter";
-import type { ImportedCredential } from "./model/importedcredential";
+import type { FastDIDCreationResult } from "./fastdidcreationresult";
+import type { DeleteCredentialOptions } from "./model/deletecredentialoptions";
+import type { GetCredentialsQuery, UICustomization } from "./model/getcredentialsquery";
 import type { ImportCredentialOptions } from "./model/importcredentialoptions";
-import type { SignedData } from "../did/model/signeddata";
+import type { ImportedCredential } from "./model/importedcredential";
 
 export type {
     FastDIDCreationResult,
@@ -13,12 +14,14 @@ export type {
     GetCredentialsQuery,
     ImportedCredential,
     ImportCredentialOptions,
+    DeleteCredentialOptions,
     SignedData
-}
-
+};
 export {
     DIDAccess,
     DIDHelper,
     ElastosIODIDAdapter,
     ElastosIODIDAdapterMode
-}
+};
+
+
