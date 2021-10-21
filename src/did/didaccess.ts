@@ -17,6 +17,7 @@ import type { DeleteCredentialOptions } from "./model/deletecredentialoptions";
 import type { GetCredentialsQuery } from "./model/getcredentialsquery";
 import type { ImportCredentialOptions } from "./model/importcredentialoptions";
 import type { ImportedCredential } from "./model/importedcredential";
+import type { RequestCredentialsQuery } from "./model/requestcredentialsquery";
 import { Utils } from "./utils";
 
 export class DIDAccess {
@@ -27,8 +28,9 @@ export class DIDAccess {
     }
 
     /**
-     * Gets credentials from user identity, based on the requested GetCredentialsQuery. Claims format is available
-     * on the elastos developer portal and can be optional or mandatory.
+     * @deprecated
+     *
+     * Gets credentials from user identity, based on the requested GetCredentialsQuery.
      * A DID Verifiable Presentation is returned, including the list of related credentials found
      * in user's identity wallet.
      */
@@ -36,6 +38,26 @@ export class DIDAccess {
         return new Promise((resolve) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 let presentation = await connectivity.getActiveConnector().getCredentials(query);
+                resolve(presentation);
+            }, () => {
+                resolve(null);
+            });
+        });
+    }
+
+    /**
+     * @deprecated
+     *
+     * Replacement for the deprecated getCredentials().
+     *
+     * Gets credentials from user identity, based on the requested RequestCredentialsQuery.
+     * A DID Verifiable Presentation is returned, including the list of related credentials found
+     * in user's identity wallet.
+     */
+    public async requestCredentials(query: RequestCredentialsQuery): Promise<VerifiablePresentation> {
+        return new Promise((resolve) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
+                let presentation = await connectivity.getActiveConnector().requestCredentials(query);
                 resolve(presentation);
             }, () => {
                 resolve(null);

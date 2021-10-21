@@ -18,16 +18,7 @@ export type GetCredentialsQuery = {
      *          // If a required field cannot be provided, the request will fail
      *          "required": true | false,
      *          // Optional
-     *          "reason": "Reason displayed to user",
-     *          // Requirements about the credential issue (ex: if we want to target a specific organization)
-     *          "iss": {
-     *              // Set selfproclaimed to true if you would like to only accept credentials that have been verified
-     *              // via specific issuer DIDs
-     *              "selfproclaimed": "false",
-     *              // Credential must have been issued by any of these specific DIDs. Note that "selfproclaimed"
-     *              // must be set to true in order to use this parameter
-     *              "did":["issuer_did1", "issuer_did2"]
-     *          }
+     *          "reason": "Reason displayed to user"
      *      }
      * }
      */
