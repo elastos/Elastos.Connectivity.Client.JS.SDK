@@ -6,6 +6,7 @@ import {
     RootIdentity, VerifiableCredential, VerifiablePresentation
 } from "@elastosfoundation/did-js-sdk";
 import moment from 'moment';
+import type { CredentialDisclosureRequest } from ".";
 import { connectivity } from "../connectivity";
 import type { SignedData } from "../did/model/signeddata";
 import { ConnectivityHelper } from "../internal/connectivityhelper";
@@ -17,7 +18,6 @@ import type { DeleteCredentialOptions } from "./model/deletecredentialoptions";
 import type { GetCredentialsQuery } from "./model/getcredentialsquery";
 import type { ImportCredentialOptions } from "./model/importcredentialoptions";
 import type { ImportedCredential } from "./model/importedcredential";
-import type { RequestCredentialsQuery } from "./model/requestcredentialsquery";
 import { Utils } from "./utils";
 
 export class DIDAccess {
@@ -28,17 +28,22 @@ export class DIDAccess {
     }
 
     /**
-     * @deprecated
+     * @deprecated Use requestCredentials().
      *
      * Gets credentials from user identity, based on the requested GetCredentialsQuery.
      * A DID Verifiable Presentation is returned, including the list of related credentials found
      * in user's identity wallet.
      */
     public async getCredentials(query: GetCredentialsQuery): Promise<VerifiablePresentation> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let presentation = await connectivity.getActiveConnector().getCredentials(query);
-                resolve(presentation);
+                try {
+                    let presentation = await connectivity.getActiveConnector().getCredentials(query);
+                    resolve(presentation);
+                }
+                catch (e) {
+                    reject(e);
+                }
             }, () => {
                 resolve(null);
             });
@@ -46,19 +51,22 @@ export class DIDAccess {
     }
 
     /**
-     * @deprecated
-     *
      * Replacement for the deprecated getCredentials().
      *
-     * Gets credentials from user identity, based on the requested RequestCredentialsQuery.
+     * Gets credentials from user identity, based on the requested CredentialDisclosureRequest.
      * A DID Verifiable Presentation is returned, including the list of related credentials found
      * in user's identity wallet.
      */
-    public async requestCredentials(query: RequestCredentialsQuery): Promise<VerifiablePresentation> {
-        return new Promise((resolve) => {
+    public async requestCredentials(request: CredentialDisclosureRequest): Promise<VerifiablePresentation> {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let presentation = await connectivity.getActiveConnector().requestCredentials(query);
-                resolve(presentation);
+                try {
+                    let presentation = await connectivity.getActiveConnector().requestCredentials(request);
+                    resolve(presentation);
+                }
+                catch (e) {
+                    reject(e);
+                }
             }, () => {
                 resolve(null);
             });
@@ -93,12 +101,17 @@ export class DIDAccess {
         identifier?: string,
         expirationDate?: string,
     ): Promise<VerifiableCredential> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let issuedCredential = await connectivity.getActiveConnector().issueCredential(
-                    holder, types, subject, identifier, expirationDate
-                );
-                resolve(issuedCredential);
+                try {
+                    let issuedCredential = await connectivity.getActiveConnector().issueCredential(
+                        holder, types, subject, identifier, expirationDate
+                    );
+                    resolve(issuedCredential);
+                }
+                catch (e) {
+                    reject(e);
+                }
             }, () => {
                 resolve(null);
             });
@@ -115,10 +128,15 @@ export class DIDAccess {
      * The list of credentials that were accepted and imported by the user are returned.
      */
     public async importCredentials(credentials: VerifiableCredential[], options?: ImportCredentialOptions): Promise<ImportedCredential[]> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let importedCredentials = await connectivity.getActiveConnector().importCredentials(credentials, options);
-                resolve(importedCredentials);
+                try {
+                    let importedCredentials = await connectivity.getActiveConnector().importCredentials(credentials, options);
+                    resolve(importedCredentials);
+                }
+                catch (e) {
+                    reject(e);
+                }
             }, () => {
                 resolve(null);
             });
@@ -137,10 +155,15 @@ export class DIDAccess {
         else
             realCredentialIds = credentialIds;
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let deletionList = await connectivity.getActiveConnector().deleteCredentials(realCredentialIds, options);
-                resolve(deletionList);
+                try {
+                    let deletionList = await connectivity.getActiveConnector().deleteCredentials(realCredentialIds, options);
+                    resolve(deletionList);
+                }
+                catch (e) {
+                    reject(e);
+                }
             }, () => {
                 resolve(null);
             });
@@ -157,12 +180,17 @@ export class DIDAccess {
      * @param jwtExtra Optional JSON object that holds fields that are directly added to the resulting response / JWT. Useful for example to send server side challenges back, or other custom application data.
      */
     public async signData(data: string, jwtExtra?: any, signatureFieldName?: string): Promise<SignedData> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let signedData = await connectivity.getActiveConnector().signData(
-                    data, jwtExtra, signatureFieldName
-                );
-                resolve(signedData);
+                try {
+                    let signedData = await connectivity.getActiveConnector().signData(
+                        data, jwtExtra, signatureFieldName
+                    );
+                    resolve(signedData);
+                }
+                catch (e) {
+                    reject(e);
+                }
             }, () => {
                 resolve(null);
             });
@@ -176,10 +204,15 @@ export class DIDAccess {
      * Returns the transaction ID, if the document was published.
      */
     public async requestPublish(): Promise<string> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let txId = await connectivity.getActiveConnector().requestPublish();
-                resolve(txId);
+                try {
+                    let txId = await connectivity.getActiveConnector().requestPublish();
+                    resolve(txId);
+                }
+                catch (e) {
+                    reject(e);
+                }
             }, () => {
                 resolve(null);
             });
@@ -198,34 +231,39 @@ export class DIDAccess {
      * to this connector request (when a third party identity app is used).
      */
     public async generateAppIdCredential(): Promise<VerifiableCredential> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                let storedAppInstanceDID = await this.getOrCreateAppInstanceDID();
-                if (!storedAppInstanceDID) {
-                    resolve(null);
-                    return;
+                try {
+                    let storedAppInstanceDID = await this.getOrCreateAppInstanceDID();
+                    if (!storedAppInstanceDID) {
+                        resolve(null);
+                        return;
+                    }
+
+                    let appInstanceDID = storedAppInstanceDID.did;
+
+                    // No such credential, so we have to create one. Send an intent to get that from the did app
+                    logger.log("Starting to generate a new App ID credential.");
+
+                    let credential = await connectivity.getActiveConnector().generateAppIdCredential(appInstanceDID.toString(), connectivity.getApplicationDID());
+
+                    // TODO IMPORTANT: Check if the credential was issued by the user himself for security purpose, to make sure
+                    // another app is not trying to issue and add a fake app-id-credential credential to user's profile
+                    // by another way.
+
+                    // Save this issued credential for later use.
+                    await storedAppInstanceDID.didStore.storeCredential(credential);
+
+                    // This generated credential must contain the following properties:
+                    // TODO: CHECK THAT THE RECEIVED CREDENTIAL CONTENT IS VALID
+                    // appInstanceDid
+                    // appDid
+
+                    resolve(credential);
                 }
-
-                let appInstanceDID = storedAppInstanceDID.did;
-
-                // No such credential, so we have to create one. Send an intent to get that from the did app
-                logger.log("Starting to generate a new App ID credential.");
-
-                let credential = await connectivity.getActiveConnector().generateAppIdCredential(appInstanceDID.toString(), connectivity.getApplicationDID());
-
-                // TODO IMPORTANT: Check if the credential was issued by the user himself for security purpose, to make sure
-                // another app is not trying to issue and add a fake app-id-credential credential to user's profile
-                // by another way.
-
-                // Save this issued credential for later use.
-                await storedAppInstanceDID.didStore.storeCredential(credential);
-
-                // This generated credential must contain the following properties:
-                // TODO: CHECK THAT THE RECEIVED CREDENTIAL CONTENT IS VALID
-                // appInstanceDid
-                // appDid
-
-                resolve(credential);
+                catch (e) {
+                    reject(e);
+                }
             }, () => {
                 resolve(null);
             });
@@ -276,39 +314,44 @@ export class DIDAccess {
 
         logger.log("Getting or creating app instance DID");
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
-                // Check if we have a app instance DID store saved in our local storage (app manager settings)
-                let appInstanceDIDInfo = await this.getExistingAppInstanceDIDInfo();
-                if (appInstanceDIDInfo) {
-                    // DID store found - previously created. Open it and get the app instance did.
-                    didStore = await DIDHelper.openDidStore(appInstanceDIDInfo.storeId);
-                    if (didStore) { // Make sure the DID store could be loaded, just in case (abnormal case).
-                        try {
-                            did = await DIDHelper.loadDID(didStore, appInstanceDIDInfo.didString);
-                        }
-                        catch (err) {
-                            logger.error(err);
+                try {
+                    // Check if we have a app instance DID store saved in our local storage (app manager settings)
+                    let appInstanceDIDInfo = await this.getExistingAppInstanceDIDInfo();
+                    if (appInstanceDIDInfo) {
+                        // DID store found - previously created. Open it and get the app instance did.
+                        didStore = await DIDHelper.openDidStore(appInstanceDIDInfo.storeId);
+                        if (didStore) { // Make sure the DID store could be loaded, just in case (abnormal case).
+                            try {
+                                did = await DIDHelper.loadDID(didStore, appInstanceDIDInfo.didString);
+                            }
+                            catch (err) {
+                                logger.error(err);
+                            }
                         }
                     }
+
+                    if (!didStore || !did) {
+                        logger.log("No app instance DID found. Creating a new one");
+
+                        // No DID store found. Need to create a new app instance DID.
+                        let didCreationresult = await this.createNewAppInstanceDID();
+                        didStore = didCreationresult.didStore;
+                        did = didCreationresult.did;
+                    }
+
+                    // Load credentials first before being able to call getCredential().
+                    await DIDHelper.loadDIDCredentials(didStore, did);
+
+                    resolve({
+                        did: did,
+                        didStore: didStore
+                    });
                 }
-
-                if (!didStore || !did) {
-                    logger.log("No app instance DID found. Creating a new one");
-
-                    // No DID store found. Need to create a new app instance DID.
-                    let didCreationresult = await this.createNewAppInstanceDID();
-                    didStore = didCreationresult.didStore;
-                    did = didCreationresult.did;
+                catch (e) {
+                    reject(e);
                 }
-
-                // Load credentials first before being able to call getCredential().
-                await DIDHelper.loadDIDCredentials(didStore, did);
-
-                resolve({
-                    did: did,
-                    didStore: didStore
-                });
             }, () => {
                 // Cancelled
                 resolve(null);
@@ -348,24 +391,29 @@ export class DIDAccess {
         logger.log("Fast DID creation with language " + language);
 
         return new Promise(async (resolve, reject) => {
-            let mnemonic = await Mnemonic.getInstance(language).generate();
-            let didStoreId = Utils.generateRandomDIDStoreId();
+            try {
+                let mnemonic = await Mnemonic.getInstance(language).generate();
+                let didStoreId = Utils.generateRandomDIDStoreId();
 
-            let didStore = await DIDStore.open(didStoreId);
+                let didStore = await DIDStore.open(didStoreId);
 
-            // Store created, now init the root identity
-            let storePass = this.helper.generateRandomPassword();
-            let rootIdentity = RootIdentity.createFromMnemonic(mnemonic, null, didStore, storePass);
+                // Store created, now init the root identity
+                let storePass = this.helper.generateRandomPassword();
+                let rootIdentity = RootIdentity.createFromMnemonic(mnemonic, null, didStore, storePass);
 
-            // Now add a DID
-            let didDocument = await rootIdentity.newDid(storePass);
-            // DID added, now we can return
-            resolve({
-                didStoreId,
-                didStore: didStore,
-                did: didDocument.getSubject(),
-                storePassword: storePass
-            });
+                // Now add a DID
+                let didDocument = await rootIdentity.newDid(storePass);
+                // DID added, now we can return
+                resolve({
+                    didStoreId,
+                    didStore: didStore,
+                    did: didDocument.getSubject(),
+                    storePassword: storePass
+                });
+            }
+            catch (e) {
+                reject(e);
+            }
         });
     }
 

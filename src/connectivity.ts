@@ -1,9 +1,8 @@
-import type { IGenericUIHandler } from "./interfaces/ui/igenericuihandler";
-import type { IConnector } from "./interfaces/connectors/iconnector";
-import { globalStorageService } from "./services/global.storage.service";
 import { DIDHelper } from "./did/didhelper";
+import type { IConnector } from "./interfaces/connectors/iconnector";
+import type { IGenericUIHandler } from "./interfaces/ui/igenericuihandler";
 import { globalLoggerService as logger } from "./services/global.logger.service";
-import { globalLocalizationService } from "./services/global.localization.service";
+import { globalStorageService } from "./services/global.storage.service";
 
 class Connectivity {
     private connectors: IConnector[] = [];
@@ -24,9 +23,9 @@ class Connectivity {
             logger.log("Registering connector with name", connector.name);
 
             // Make sure this connector name doesn't exist yet.
-            let connectorIndex = this.connectors.findIndex((c)=>c.name === connector.name);
+            let connectorIndex = this.connectors.findIndex((c) => c.name === connector.name);
             if (connectorIndex >= 0)
-                throw new Error("Connector with name "+connector.name+" already exists");
+                throw new Error("Connector with name " + connector.name + " already exists");
 
             this.connectors.push(connector);
 
@@ -34,7 +33,7 @@ class Connectivity {
             // if the active one, we re-activate it.
             let activeConnectorName = await globalStorageService.get("activeconnectorname", null);
             if (activeConnectorName == connector.name) {
-                logger.log("Reactivating previously saved connector:"+activeConnectorName);
+                logger.log("Reactivating previously saved connector:" + activeConnectorName);
                 this.activeConnector = connector;
             }
         }
@@ -45,9 +44,9 @@ class Connectivity {
         if (this.activeConnector && this.activeConnector.name == connectorName)
             this.setActiveConnector(null);
 
-        let connectorIndex = this.connectors.findIndex((c)=>c.name === connectorName);
+        let connectorIndex = this.connectors.findIndex((c) => c.name === connectorName);
         if (connectorIndex < 0)
-            throw new Error("Connector with name "+connectorName+" doesn't exist");
+            throw new Error("Connector with name " + connectorName + " doesn't exist");
 
         // Remove connector from our list.
         this.connectors.splice(connectorIndex, 1);
@@ -64,9 +63,9 @@ class Connectivity {
             this.activeConnector = null;
         }
         else if (connectorName != null) {
-            let newActiveConnector = this.connectors.find((c)=>c.name === connectorName);
+            let newActiveConnector = this.connectors.find((c) => c.name === connectorName);
             if (!newActiveConnector)
-                throw new Error("Failed to set active connector. Connector "+connectorName+" not found!");
+                throw new Error("Failed to set active connector. Connector " + connectorName + " not found!");
 
             if (this.activeConnector && this.activeConnector.name !== connectorName)
                 await this.cleanupConnectorContext(this.activeConnector);
@@ -84,12 +83,12 @@ class Connectivity {
      * This is true for example for hive's App ID credential, that is different for each connector.
      */
     private async cleanupConnectorContext(connector: IConnector): Promise<void> {
-        logger.log("Cleaning up connector context for: "+connector.name);
+        logger.log("Cleaning up connector context for: " + connector.name);
         await new DIDHelper().cleanupConnectorContext(connector);
     }
 
     public getActiveConnector(): IConnector | null {
-        // For now, is a elastos provider is injected in window.elastos, we always use it by
+        // For now, if an elastos provider is injected in window.elastos, we always use it by
         // default.
         if ("elastos" in window)
             return window["elastos"];

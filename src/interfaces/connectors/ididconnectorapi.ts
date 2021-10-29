@@ -2,6 +2,7 @@ import type {
     JSONObject,
     VerifiableCredential, VerifiablePresentation
 } from "@elastosfoundation/did-js-sdk";
+import type { CredentialDisclosureRequest } from "../../did";
 import type { DeleteCredentialOptions } from "../../did/model/deletecredentialoptions";
 import type { GetCredentialsQuery } from "../../did/model/getcredentialsquery";
 import type { ImportCredentialOptions } from "../../did/model/importcredentialoptions";
@@ -10,6 +11,7 @@ import type { SignedData } from "../../did/model/signeddata";
 
 export interface IDIDConnectorAPI {
     getCredentials(query: GetCredentialsQuery): Promise<VerifiablePresentation>;
+    requestCredentials(request: CredentialDisclosureRequest): Promise<VerifiablePresentation>;
     issueCredential(holder: string, types: string[], subject: JSONObject, identifier?: string, expirationDate?: string): Promise<VerifiableCredential>;
     importCredentials(credentials: VerifiableCredential[], options?: ImportCredentialOptions): Promise<ImportedCredential[]>;
     deleteCredentials(credentialIds: string[], options?: DeleteCredentialOptions): Promise<string[]>;

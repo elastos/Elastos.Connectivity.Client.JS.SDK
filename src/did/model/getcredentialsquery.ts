@@ -1,8 +1,4 @@
-
-export type UICustomization = {
-    primaryColorLightMode: string,
-    primaryColorDarkMode: string
-}
+import type { UICustomization } from "./uicustomization";
 
 export type GetCredentialsQuery = {
     /**

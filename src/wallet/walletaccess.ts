@@ -1,15 +1,19 @@
 import { connectivity } from "..";
-import { IWalletConnectorAPI } from "../interfaces/connectors/iwalletconnectorapi";
 import { ConnectivityHelper } from "../internal/connectivityhelper";
 import type { PayQuery, SmartContractQuery, TransactionResult } from "./model/transaction.model";
 
 export class WalletAccess {
     pay(query: PayQuery): Promise<TransactionResult> {
-        return new Promise((resolve)=>{
-            ConnectivityHelper.ensureActiveConnector(async ()=>{
-                let result = await connectivity.getActiveConnector().pay(query);
-                resolve(result);
-            }, ()=>{
+        return new Promise((resolve, reject) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
+                try {
+                    let result = await connectivity.getActiveConnector().pay(query);
+                    resolve(result);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            }, () => {
                 resolve(null);
             });
         });
