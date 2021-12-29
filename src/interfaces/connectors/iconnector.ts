@@ -1,4 +1,3 @@
-import type { provider } from "web3-core";
 import type { IDIDConnectorAPI } from "./ididconnectorapi";
 import type { IWalletConnectorAPI } from "./iwalletconnectorapi";
 
@@ -16,5 +15,5 @@ export interface IConnector extends IDIDConnectorAPI, IWalletConnectorAPI {
      * This provider can be used to initialize Web3 instances in order to send ethereum commands
      * such as eth_getAccounts, eth_sendTransaction.
      */
-    getWeb3Provider(): provider;
+    getWeb3Provider(): any; // Don't export "web3-core" provider type here from the interface
 }
