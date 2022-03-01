@@ -332,9 +332,10 @@ export class DIDAccess {
      * Get the existing application instance DID if it was created before. Otherwise, a new app instance
      * DID is created and the information is stored in persistent storage for later use.
      */
-    public async getOrCreateAppInstanceDID(): Promise<{ did: DID, didStore: DIDStore }> {
+    public async getOrCreateAppInstanceDID(): Promise<{ did: DID, didStore: DIDStore, storePassword: string }> {
         let didStore: DIDStore = null;
         let did: DID = null;
+        let storePassword: string = null;
 
         logger.log("Getting or creating app instance DID");
 
@@ -349,6 +350,7 @@ export class DIDAccess {
                         if (didStore) { // Make sure the DID store could be loaded, just in case (abnormal case).
                             try {
                                 did = await DIDHelper.loadDID(didStore, appInstanceDIDInfo.didString);
+                                storePassword = appInstanceDIDInfo.storePassword;
                             }
                             catch (err) {
                                 logger.error(err);
@@ -363,14 +365,16 @@ export class DIDAccess {
                         let didCreationresult = await this.createNewAppInstanceDID();
                         didStore = didCreationresult.didStore;
                         did = didCreationresult.did;
+                        storePassword = didCreationresult.storePassword;
                     }
 
                     // Load credentials first before being able to call getCredential().
                     await DIDHelper.loadDIDCredentials(didStore, did);
 
                     resolve({
-                        did: did,
-                        didStore: didStore
+                        did,
+                        didStore,
+                        storePassword
                     });
                 }
                 catch (e) {
@@ -444,13 +448,14 @@ export class DIDAccess {
     /**
      * Creates a new application instance DID store, DID, and saves info to permanent storage.
      */
-    public async createNewAppInstanceDID(): Promise<{ didStore: DIDStore, did: DID }> {
+    public async createNewAppInstanceDID(): Promise<{ didStore: DIDStore, did: DID, storePassword: string }> {
         let didCreationResult = await this.fastCreateDID(Mnemonic.ENGLISH);
         await this.helper.saveAppInstanceDIDInfo(didCreationResult.didStoreId, didCreationResult.did.toString(), didCreationResult.storePassword);
 
         return {
             didStore: didCreationResult.didStore,
-            did: didCreationResult.did
+            did: didCreationResult.did,
+            storePassword: didCreationResult.storePassword
         }
     }
 }
