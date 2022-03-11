@@ -1,4 +1,5 @@
 export * from "../did/model/signeddata";
+export * from "../did/model/updatehivevault";
 export * from "./didaccess";
 export * from "./didhelper";
 export * from "./elastosiodidadapter";

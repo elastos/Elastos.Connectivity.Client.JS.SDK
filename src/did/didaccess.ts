@@ -18,6 +18,7 @@ import type { DeleteCredentialOptions } from "./model/deletecredentialoptions";
 import type { GetCredentialsQuery } from "./model/getcredentialsquery";
 import type { ImportCredentialOptions } from "./model/importcredentialoptions";
 import type { ImportedCredential } from "./model/importedcredential";
+import type { UpdateHiveVaultAddressStatus } from "./model/updatehivevault";
 import { generateRandomDIDStoreId, randomString } from "./utils";
 
 export class DIDAccess {
@@ -233,6 +234,40 @@ export class DIDAccess {
                 try {
                     let txId = await connectivity.getActiveConnector().requestPublish();
                     resolve(txId);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            }, () => {
+                resolve(null);
+            });
+        });
+    }
+
+    /**
+     * Requests user to update his hive vault service address in his DID document. This address is part of the
+     * published DID document and is used by other users to find another user's hive vault address
+     * based on his DID.
+     *
+     * If everything goes well, the identity wallet pushes users to instantly publish a new version of their
+     * DID document online, so that it becomes up-to-date with the latest hive vault address information. But
+     * it is also possible that the operation (DID modification, or publication) is cancelled by the user.
+     *
+     * Note that this operation does NOT migrate user's vault content. It's only a raw update of the vault address.
+     * The calling application is responsible for this migration. If this is not done, users will loose access
+     * to their data unless they revert this later to the old vault address.
+     *
+     * @param vaultAddress The new hive vault address. Eg: https://hive1.trinity-tech.io
+     * @param displayName Vault name to show on user's confirmation screen together with the url. Purely informative, not saved to the DID.
+     *
+     * @returns True if the DID document was updated AND published successfully. False otherwise.
+     */
+    public async updateHiveVaultAddress(vaultAddress: string, displayName: string): Promise<UpdateHiveVaultAddressStatus> {
+        return new Promise((resolve, reject) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
+                try {
+                    let updated = await connectivity.getActiveConnector().updateHiveVaultAddress(vaultAddress, displayName);
+                    resolve(updated);
                 }
                 catch (e) {
                     reject(e);
