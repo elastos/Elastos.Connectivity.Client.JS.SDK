@@ -1,6 +1,6 @@
 {
   "name": "@elastosfoundation/elastos-connectivity-sdk-js",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Elastos JS connectivity SDK to bridge mobile Apps with Elastos wallets",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -21,7 +21,7 @@
     "dist.esm",
     "typings"
   ],
-  "typings": "typings/",
+  "typings": "typings/index.d.ts",
   "keywords": [],
   "author": "Elastos Foundation",
   "license": "MIT",

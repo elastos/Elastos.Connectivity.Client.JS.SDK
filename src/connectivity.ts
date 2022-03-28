@@ -3,6 +3,7 @@ import type { IConnector } from "./interfaces/connectors/iconnector";
 import type { IGenericUIHandler } from "./interfaces/ui/igenericuihandler";
 import { globalLoggerService as logger } from "./services/global.logger.service";
 import { globalStorageService } from "./services/global.storage.service";
+import { getGlobalSingleton } from "./singleton";
 
 class Connectivity {
     private connectors: IConnector[] = [];
@@ -125,4 +126,4 @@ class Connectivity {
     }
 }
 
-export const connectivity = new Connectivity();
+export const connectivity = getGlobalSingleton<Connectivity>("connectivity", () => new Connectivity());
