@@ -19,7 +19,7 @@ import type { GetCredentialsQuery } from "./model/getcredentialsquery";
 import type { ImportCredentialOptions } from "./model/importcredentialoptions";
 import type { ImportedCredential } from "./model/importedcredential";
 import type { UpdateHiveVaultAddressStatus } from "./model/updatehivevault";
-import { generateRandomDIDStoreId, randomString } from "./utils";
+import { generateRandomDIDStoreId, notImplementedError, randomString } from "./utils";
 
 export class DIDAccess {
     private helper: DIDHelper = null;
@@ -38,6 +38,11 @@ export class DIDAccess {
     public async getCredentials(query: GetCredentialsQuery): Promise<VerifiablePresentation> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().getCredentials) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     let presentation = await connectivity.getActiveConnector().getCredentials(query);
                     resolve(presentation);
@@ -61,6 +66,11 @@ export class DIDAccess {
     public async requestCredentials(request: CredentialDisclosureRequest): Promise<VerifiablePresentation> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().requestCredentials) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     // If realm and/or nonce are not set by the app, we set and verify some values.
                     // DID SDKs force those fields to be set for security reasons.
@@ -128,6 +138,11 @@ export class DIDAccess {
     ): Promise<VerifiableCredential> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().issueCredential) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     let issuedCredential = await connectivity.getActiveConnector().issueCredential(
                         holder, types, subject, identifier, expirationDate
@@ -155,6 +170,11 @@ export class DIDAccess {
     public async importCredentials(credentials: VerifiableCredential[], options?: ImportCredentialOptions): Promise<ImportedCredential[]> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().importCredentials) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     let importedCredentials = await connectivity.getActiveConnector().importCredentials(credentials, options);
                     resolve(importedCredentials);
@@ -182,6 +202,11 @@ export class DIDAccess {
 
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().deleteCredentials) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     let deletionList = await connectivity.getActiveConnector().deleteCredentials(realCredentialIds, options);
                     resolve(deletionList);
@@ -207,6 +232,11 @@ export class DIDAccess {
     public async signData(data: string, jwtExtra?: any, signatureFieldName?: string): Promise<SignedData> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().signData) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     let signedData = await connectivity.getActiveConnector().signData(
                         data, jwtExtra, signatureFieldName
@@ -231,6 +261,11 @@ export class DIDAccess {
     public async requestPublish(): Promise<string> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().requestPublish) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     let txId = await connectivity.getActiveConnector().requestPublish();
                     resolve(txId);
@@ -265,9 +300,67 @@ export class DIDAccess {
     public async updateHiveVaultAddress(vaultAddress: string, displayName: string): Promise<UpdateHiveVaultAddressStatus> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().updateHiveVaultAddress) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     let updated = await connectivity.getActiveConnector().updateHiveVaultAddress(vaultAddress, displayName);
                     resolve(updated);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            }, () => {
+                resolve(null);
+            });
+        });
+    }
+
+    /**
+     * Requests the identity wallet to add, or update a credential context credential. A credential context is a
+     * credential that contains the JSON-LD description of a credential context/type. Credential context/types are
+     * used as template to create credentials in app, that follow a standardized format. For instance, a credential
+     * context can define that the type "MyCred" contains two fields, "name" and "location", and anyone can
+     * conform to this type to create, and also to read credentials that flow between apps.
+     *
+     * When importing a credential context, the following operations are done:
+     * - The credential context credential is imported into user's DID store, locally
+     * - The DID document (public) is updated to:
+     * -    Contain that new credential (the credential will be public)
+     * -    Add or update a "service" entry that points to the credential ID.
+     *
+     * When apps use credentials and want to discover the credential types that they use, they know the full
+     * ID or the credential type thanks to the context+type used by the credential. A context looks like
+     * "did://elastos/abcdefghijkl/MyCred1", and the type looks like "MyCred". Thanks to the context url,
+     * the DID document of the developer who published the credential context is resolved, and the context url
+     * is use to find a "service" (in the DID document) that matches. From the service, the current credential
+     * context credential in use can be retrieved in the DID document, and the credential format can be known.
+     *
+     * Every time new credentials are created, we don't reuse the same credential ID. This means that we cannot
+     * modify and existing context format. But then, what if a developer wants to add a field or slightly
+     * modify the format? We don't want to ask all using apps to upgrade to use a new credential context url and
+     * start to maintain a long list of supported credential types (version 1, 2, 3...). To solve this,
+     * "services" are used in order to be able to update credential type formats when really needed (trying to
+     * preserve backward compatibility) while not requiring to upgrade all apps. The service url always remains
+     * the same (for one kind of credential type), but the service endpoint is updated to point to the new credential
+     * context credential, that contains the modified format.
+     *
+     * @param serviceName The stable context name url that will be used by credentials
+     * @param contextCredential The credential context credential, generated on a tool such as the elastos credential toolbox
+     */
+    importCredentialContext(serviceName: string, contextCredential: VerifiableCredential): Promise<ImportedCredential> {
+        return new Promise((resolve, reject) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().importCredentialContext) {
+                    reject(notImplementedError());
+                    return;
+                }
+
+                try {
+                    let result = await connectivity.getActiveConnector().importCredentialContext(serviceName, contextCredential);
+                    resolve(result);
                 }
                 catch (e) {
                     reject(e);
@@ -292,6 +385,11 @@ export class DIDAccess {
     public async generateAppIdCredential(): Promise<VerifiableCredential> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().generateAppIdCredential) {
+                    reject(notImplementedError());
+                    return;
+                }
+
                 try {
                     let storedAppInstanceDID = await this.getOrCreateAppInstanceDID();
                     if (!storedAppInstanceDID) {
