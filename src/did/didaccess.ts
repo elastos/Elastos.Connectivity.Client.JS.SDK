@@ -428,6 +428,37 @@ export class DIDAccess {
     }
 
     /**
+     * Generates a special short live credential (3 days) used to backup and restore hive vaults
+     * for a user. Using this credential, user's current hive node can authenticate to a target
+     * backup or restore hive node, in order to either backup current user data to the backup node,
+     * or restore user data from the backup node.
+     *
+     * @param sourceHiveNodeDID DID of the hive node that wants to initiate backup/restore operations.
+     * @param targetHiveNodeDID DID of the slave node that will operate requests from the source node.
+     * @param targetNodeURL Public url of the target hive node (For backups, this is the node that will hold the backup data).
+     */
+    public async generateHiveBackupCredential(sourceHiveNodeDID: string, targetHiveNodeDID: string, targetNodeURL: string): Promise<VerifiableCredential> {
+        return new Promise((resolve, reject) => {
+            ConnectivityHelper.ensureActiveConnector(async () => {
+                if (!connectivity.getActiveConnector().generateHiveBackupCredential) {
+                    reject(notImplementedError());
+                    return;
+                }
+
+                try {
+                    let credential = await connectivity.getActiveConnector().generateHiveBackupCredential(sourceHiveNodeDID, targetHiveNodeDID, targetNodeURL);
+                    resolve(credential);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            }, () => {
+                resolve(null);
+            });
+        });
+    }
+
+    /**
      * Gets the special App ID credential from the app instance DID. This credential was delivered by
      * a connector and signed with user's DID, after user's approval.
      * The credential contains the real app did used to publish it.
