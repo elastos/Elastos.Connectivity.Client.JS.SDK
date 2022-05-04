@@ -85,6 +85,9 @@ export class DIDAccess {
                         shouldManuallyVerifyRealm = true;
                     }
 
+                    // Hardcoded format version - we are now at version 2 (after May 2022)
+                    request._version = 2;
+
                     let presentation = await connectivity.getActiveConnector().requestCredentials(request);
 
                     if (presentation) {
