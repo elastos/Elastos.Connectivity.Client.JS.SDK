@@ -1,3 +1,5 @@
+import type * as didSdk from "@elastosfoundation/did-js-sdk";
+import type { connectivity } from "../..";
 import type { IDIDConnectorAPI } from "./ididconnectorapi";
 import type { IWalletConnectorAPI } from "./iwalletconnectorapi";
 
@@ -16,4 +18,6 @@ export interface IConnector extends IDIDConnectorAPI, IWalletConnectorAPI {
      * such as eth_getAccounts, eth_sendTransaction.
      */
     getWeb3Provider(): any; // Don't export "web3-core" provider type here from the interface
+
+    setModuleContext?(didSDK: typeof didSdk, connectivityInstance: typeof connectivity);
 }

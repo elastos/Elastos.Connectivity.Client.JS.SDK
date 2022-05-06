@@ -93,8 +93,8 @@ class Connectivity {
         // default.
         if ("elastos" in window)
             return window["elastos"];
-
-        return this.activeConnector;
+        else
+            return this.activeConnector;
     }
 
     public getAvailableConnectors(): IConnector[] {
