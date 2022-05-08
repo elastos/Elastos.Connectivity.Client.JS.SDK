@@ -15,8 +15,8 @@ export class ConnectivityHelper {
         else {
             // If no active connector but only one connector available, we auto-activate it.
             if (connectivity.getAvailableConnectors().length == 1) {
+                await connectivity.setActiveConnector(connectivity.getAvailableConnectors()[0].name);
                 this.sendContextToActiveConnector();
-                connectivity.setActiveConnector(connectivity.getAvailableConnectors()[0].name);
                 onActiveConnector();
             }
             else {
