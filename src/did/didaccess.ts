@@ -615,12 +615,13 @@ export class DIDAccess {
     /**
      * Creates a new application instance DID store, DID, and saves info to permanent storage.
      */
-    public async createNewAppInstanceDID(): Promise<{ didStore: DIDStore, did: DID, storePassword: string }> {
+    public async createNewAppInstanceDID(): Promise<{ didStore: DIDStore, didStoreId: string, did: DID, storePassword: string }> {
         let didCreationResult = await this.fastCreateDID(Mnemonic.ENGLISH);
         await this.helper.saveAppInstanceDIDInfo(didCreationResult.didStoreId, didCreationResult.did.toString(), didCreationResult.storePassword);
 
         return {
             didStore: didCreationResult.didStore,
+            didStoreId: didCreationResult.didStoreId,
             did: didCreationResult.did,
             storePassword: didCreationResult.storePassword
         }
