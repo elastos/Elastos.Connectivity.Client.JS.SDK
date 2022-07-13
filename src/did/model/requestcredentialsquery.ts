@@ -61,9 +61,22 @@ export type NoMatchRecommendation = {
 
 /**
  * A Claim describes what the calling application would like to retrieve from users identity wallet.
- * Helper methods are provided to build to the most claim configurations, such as:
+ * Helper methods are provided to build the most common claim configurations, such as:
  *    standardNameClaim("Your name")
  *    simpleTypeClaim("Your diploma", "https://my.web/credentials/diplomacredential/v1#DiplomaCredential")
+ *
+ * About claim descriptions:
+ *
+ * These are mostly a user interface element, used to show users why some credentials are requested, and control
+ * how many min/max credentials of a kind have to be provided.
+ *
+ * Each claim description can have more than one claim, that are combined as "OR", meaning that any
+ * of the claim description claim configurations can be provided by users. This is useful to say that
+ * we want, for example, a "name" credential either with type did1:NameCredential or type did2:AnotherNameCredential,
+ * but we want at least one of those.
+ *
+ * On the contrary, multiple root "claim descriptions" combine as "AND", meaning that each claim description
+ * must be fulfilled for users to be able to validate the screen.
  *
  * About min/max:
  *
@@ -87,44 +100,71 @@ export type NoMatchRecommendation = {
  * - NOTE: Encapsulate the tested credential object in an array [].
  * - NOTE: Use the Goessner tester for better results.
  */
-export class Claim {
+export class ClaimDescription {
   /** Reason displayed to user on the identity wallet UI. */
   public reason: string;
+
+  /** Minimum number of credentials that should be returned. Default: 1 */
+  public min?: number = 1;
+
+  /** Maximum number of credentials that should be returned. Default: 1 */
+  public max?: number = 1;
+
+  /**
+    * In case the user has no credential matching the claim description, the identity wallet can recommend
+    * one or more urls (dApp, native store app...) where credentials can be obtained.
+    * For instance, if the claim requires a "KYC-ed" credential issued by a specific issuer,
+    * the recommendation url may be the issuer's dApp url */
+  public noMatchRecommendations?: NoMatchRecommendation[];
+
+  /** List of OR claims that need to be fulfilled */
+  public claims: Claim[];
+
+  constructor() { }
+
+  public withReason(reason: string): ClaimDescription {
+    this.reason = reason;
+    return this;
+  }
+
+  public withMin(min: number): ClaimDescription {
+    this.min = min;
+    return this;
+  }
+
+  public withMax(max: number): ClaimDescription {
+    this.max = max;
+    return this;
+  }
+
+  public withNoMatchRecommendations(noMatchRecommendations?: NoMatchRecommendation[]): ClaimDescription {
+    this.noMatchRecommendations = noMatchRecommendations;
+    return this;
+  }
+
+  public withClaim(claim: Claim): ClaimDescription {
+    this.claims = [claim];
+    return this;
+  }
+
+  public withAnyOfClaims(claims: Claim[]): ClaimDescription {
+    this.claims = claims;
+    return this;
+  }
+}
+
+export class Claim {
   /** Json path query to match user credentials against */
   public query: JsonPath;
-  /** Minimum number of credentials that should be returned. Default: 1 */
-  public min?: number;
-  /** Maximum number of credentials that should be returned. Default: 1 */
-  public max?: number;
+
   /**
    * Credentials must have been issued by any of these specific DIDs. Default: undefined,
    * meaning that any issuer is accepted.
    */
   public issuers?: DIDString[];
-  /**
-   * In case the user has no credential matching the claim, the identity wallet can recommend
-   * one or more urls (dApp, native store app...) where credentials can be obtained.
-   * For instance, if the claim requires a "KYC-ed" credential issued by a specific issuer,
-   * the recommendation url may be the issuer's dApp url */
-  public noMatchRecommendations?: NoMatchRecommendation[];
-
-  public withReason(reason: string): Claim {
-    this.reason = reason;
-    return this;
-  }
 
   public withQuery(query: string): Claim {
     this.query = query;
-    return this;
-  }
-
-  public withMin(min: number): Claim {
-    this.min = min;
-    return this;
-  }
-
-  public withMax(max: number): Claim {
-    this.max = max;
     return this;
   }
 
@@ -132,50 +172,63 @@ export class Claim {
     this.issuers = issuers;
     return this;
   }
-
-  public withNoMatchRecommendations(noMatchRecommendations?: NoMatchRecommendation[]): Claim {
-    this.noMatchRecommendations = noMatchRecommendations;
-    return this;
-  }
 }
 
 /**
  * Builds a simple claim from a reason and a Json path query.
  */
-export function claimWithJsonPathQuery(reason: string, query: JsonPath, required = true): Claim {
-  let claim: Claim = new Claim()
-    .withReason(reason)
-    .withQuery(query)
-    .withMin(required ? 1 : 0); // Min/Max are at one by default (required) - if not required, this means the min can be 0
+export function claimWithJsonPathQuery(query: JsonPath): Claim {
+  return new Claim().withQuery(query);
+}
 
-  return claim;
+/**
+ * Shortcut to build a claim description with basic info inside.
+ */
+export function claimDescription(reason: string, required = false): ClaimDescription {
+  return new ClaimDescription()
+    .withReason(reason)
+    .withMin(required ? 1 : 0); // Min/Max are at one by default (required) - if not required, this means the min can be 0
+}
+
+export function typeClaim(type: string): Claim {
+  return claimWithJsonPathQuery(`$[?(@.type.indexOf('${type}') >= 0)]`);
+}
+
+export function idClaim(id: string): Claim {
+  return claimWithJsonPathQuery(`$[?(@.id == "${id}" || @.id.match(/#${id}$/))]`)
 }
 
 /**
  * Builds a claim that requires a specific credential ID.
  * This remains a rare case as credentials IDs are generailly random strings. But useful to retrieve
  * a very specific credential from user.
+ *
+ * The generate claim is wrapped in a claim description automatically
  */
-export function simpleIdClaim(reason: string, id: string, required = true): Claim {
+export function simpleIdClaim(reason: string, id: string, required = true): ClaimDescription {
   // id can be either long form, or a fragment. We want to match when id is either:
   //    did:elastos:iqeXQuCuUuZ2mdHuPUhQpQGFs4HqHixm3G#email36543284619842
   //    or
   //    email36543284619842
-  return claimWithJsonPathQuery(reason, `$[?(@.id == "${id}" || @.id.match(/#${id}$/))]`, required);
+  return claimDescription(reason, required).withAnyOfClaims([
+    idClaim(id)
+  ]);
 }
 
 /**
  * Builds a claim that requires a specific credential type.
  */
-export function simpleTypeClaim(reason: string, type: string, required = true): Claim {
-  return claimWithJsonPathQuery(reason, `$[?(@.type.indexOf('${type}') >= 0)]`, required);
+export function simpleTypeClaim(reason: string, type: string, required = true): ClaimDescription {
+  return claimDescription(reason, required).withAnyOfClaims([
+    typeClaim(type)
+  ]);
 }
 
-export function standardNameClaim(reason: string, required = true): Claim {
+export function standardNameClaim(reason: string, required = true): ClaimDescription {
   return simpleTypeClaim(reason, "NameCredential", required);
 }
 
-export function standardEmailClaim(reason: string, required = true): Claim {
+export function standardEmailClaim(reason: string, required = true): ClaimDescription {
   return simpleTypeClaim(reason, "EmailCredential", required);
 }
 
@@ -201,20 +254,37 @@ export function standardEmailClaim(reason: string, required = true): Claim {
  *    claims: [ simpleTypeClaim("Your diploma", "https://university.standards/diplomacredential/v1#DiplomaCredential") ]
  * }
  *
- * Example of advanced query:
+ * Advanced uery to get a "name" from 2 different name credential types, AND a gender:
+ *
+ * {
+ *   claims: [
+ *     claimDescription("Your name", false).withAnyOfClaims([
+ *       typeClaim("NamePassportCredential"),
+ *       // OR
+ *       typeClaim("NameIDCardCredential"),
+ *     ]).withNoMatchRecommendations([
+ *       { title: "an-app.io", url: "https://an-app.io", urlTarget: "internal" }
+ *     ]),
+ *
+ *     // AND
+ *
+ *     simpleTypeClaim("Your birth date", "BirthDateCredential", true).withIssuers(...)
+ *  ]
+ * }
+ *
+ * Advanced query with complex json path:
  *
  * // Get a custom credential made by a third party app or service. User can select between 0 and 5 of this credential
  * // type at the same time if he has many. Don't accept user's self created credentials, but only the credentials
  * // created by "did:elastos:anothercompany". Try to customize UI with some colors.
  * {
  *    claims: [
- *      {
- *          reason: "To Identify you on our awesome system"
- *          query: '$[?(@.type == "MyCustomCredential" && @.credentialSubject.myData == "someValue")]',
- *          min: 0, max: 5,
- *          acceptUserAsIssuer: false,
- *          issuers: [ "did:elastos:anothercompany" ]
- *      }
+ *      claimDescription("To Identify you on our awesome system")
+ *        .withMin(0).withMax(5)
+ *        .withAnyOfClaims([
+ *           claimWithJsonPathQuery('$[?(@.type == "MyCustomCredential" && @.credentialSubject.myData == "someValue")]')
+ *             .withIssuers([ "did:elastos:anothercompany" ])
+ *        ])
  *    ],
  *    customization: {
  *      primaryColorLightMode: "#FF0000",
@@ -222,12 +292,15 @@ export function standardEmailClaim(reason: string, required = true): Claim {
  *    }
  * }
  *
- * Where to find standard credential types?
- * TODO - documentation portal AND/OR credentials playground
+ * Where to find standard and existing credential types?
+ * - https://credentials-toolbox.elastos.net/
  */
 export type CredentialDisclosureRequest = {
+  /** Internal field for backward compatibility management */
+  _version?: number;
+
   /** List of claims that have to be provided by the user. */
-  claims: Claim[];
+  claims: ClaimDescription[];
   /** Optional DID string to which this request must be sent. If provided, the identity wallet must force to select that user's identity. */
   target?: DIDString;
   /** Optional nonce challenge returned in the signed Verifiable Presentation, for additional security level. */
