@@ -7,6 +7,7 @@ import { globalLocalizationService as localization } from "./services/global.loc
 import { globalLoggerService as logger } from "./services/global.logger.service";
 import { globalStorageService as storage } from "./services/global.storage.service";
 import { globalThemeService as theme } from "./services/global.theme.service";
+import * as UX from "./ux";
 import * as Wallet from "./wallet";
 
 // Provide a default generic UI handler that can be replaced later.
@@ -19,6 +20,7 @@ export {
     DID,
     Hive,
     Wallet,
+    UX,
 
     // Singleton instances
     connectivity,

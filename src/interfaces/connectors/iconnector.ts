@@ -1,9 +1,10 @@
 import type * as didSdk from "@elastosfoundation/did-js-sdk";
 import type { connectivity } from "../..";
 import type { IDIDConnectorAPI } from "./ididconnectorapi";
+import type { IUXConnectorAPI } from "./iuxconnectorapi";
 import type { IWalletConnectorAPI } from "./iwalletconnectorapi";
 
-export interface IConnector extends IDIDConnectorAPI, IWalletConnectorAPI {
+export interface IConnector extends IDIDConnectorAPI, IWalletConnectorAPI, IUXConnectorAPI {
     name: string;
 
     /**
