@@ -1,9 +1,7 @@
-import {
+import type {
     DID,
     DIDStore,
-    JSONObject,
-    Mnemonic,
-    RootIdentity, VerifiableCredential, VerifiablePresentation
+    JSONObject, VerifiableCredential, VerifiablePresentation
 } from "@elastosfoundation/did-js-sdk";
 import moment from 'moment';
 import Queue from "promise-queue";
@@ -11,6 +9,7 @@ import type { CredentialDisclosureRequest } from ".";
 import { connectivity } from "../connectivity";
 import type { SignedData } from "../did/model/signeddata";
 import { ConnectivityHelper } from "../internal/connectivityhelper";
+import { lazyElastosDIDSDKImport } from "../internal/importhelper";
 import { globalLoggerService as logger } from "../services/global.logger.service";
 import { globalStorageService } from "../services/global.storage.service";
 import { DIDHelper } from "./didhelper";
@@ -593,6 +592,8 @@ export class DIDAccess {
 
         return new Promise(async (resolve, reject) => {
             try {
+                const { Mnemonic, DIDStore, RootIdentity } = await lazyElastosDIDSDKImport();
+
                 let mnemonic = await Mnemonic.getInstance(language).generate();
                 let didStoreId = generateRandomDIDStoreId();
 
@@ -622,6 +623,7 @@ export class DIDAccess {
      * Creates a new application instance DID store, DID, and saves info to permanent storage.
      */
     public async createNewAppInstanceDID(): Promise<{ didStore: DIDStore, didStoreId: string, did: DID, storePassword: string }> {
+        const { Mnemonic } = await lazyElastosDIDSDKImport();
         let didCreationResult = await this.fastCreateDID(Mnemonic.ENGLISH);
         await this.helper.saveAppInstanceDIDInfo(didCreationResult.didStoreId, didCreationResult.did.toString(), didCreationResult.storePassword);
 

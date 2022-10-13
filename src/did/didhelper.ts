@@ -1,11 +1,8 @@
 import type {
-    DID,
-    VerifiableCredential
-} from "@elastosfoundation/did-js-sdk";
-import {
-    DIDStore
+    DID, DIDStore, VerifiableCredential
 } from "@elastosfoundation/did-js-sdk";
 import type { IConnector } from "../interfaces/connectors";
+import { lazyElastosDIDSDKImport } from "../internal/importhelper";
 import { globalStorageService } from "../services/global.storage.service";
 import { generateRandomDIDStoreId } from "./utils";
 
@@ -47,6 +44,7 @@ export class DIDHelper {
     public static openDidStore(storeId: string): Promise<DIDStore> {
         return new Promise(async (resolve) => {
             try {
+                const { DIDStore } = await lazyElastosDIDSDKImport();
                 let didStore = await DIDStore.open(storeId);
                 resolve(didStore);
             }
