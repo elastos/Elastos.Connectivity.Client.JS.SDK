@@ -36,4 +36,4 @@ export const generateRandomDIDStoreId = (): string => {
 
 export const randomString = generateRandomDIDStoreId;
 
-export const notImplementedError = (): Error => new Error("This method is not implemented in the connector. Ask the connector developer to update the implementation");
+export const notImplementedError = (methodName: string): Error => new Error(`Method ${methodName} is not implemented in the connector. Ask the connector developer to update the implementation`);

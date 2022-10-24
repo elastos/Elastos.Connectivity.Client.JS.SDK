@@ -42,7 +42,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().getCredentials) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("getCredentials"));
                     return;
                 }
 
@@ -70,7 +70,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().requestCredentials) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("requestCredentials"));
                     return;
                 }
 
@@ -145,7 +145,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().issueCredential) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("issueCredential"));
                     return;
                 }
 
@@ -177,7 +177,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().importCredentials) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("importCredentials"));
                     return;
                 }
 
@@ -209,7 +209,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().deleteCredentials) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("deleteCredentials"));
                     return;
                 }
 
@@ -239,7 +239,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().signData) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("signData"));
                     return;
                 }
 
@@ -268,7 +268,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().requestPublish) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("requestPublish"));
                     return;
                 }
 
@@ -307,7 +307,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().updateHiveVaultAddress) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("updateHiveVaultAddress"));
                     return;
                 }
 
@@ -360,7 +360,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().importCredentialContext) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("importCredentialContext"));
                     return;
                 }
 
@@ -392,7 +392,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().generateAppIdCredential) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("generateAppIdCredential"));
                     return;
                 }
 
@@ -447,7 +447,7 @@ export class DIDAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().generateHiveBackupCredential) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("generateHiveBackupCredential"));
                     return;
                 }
 

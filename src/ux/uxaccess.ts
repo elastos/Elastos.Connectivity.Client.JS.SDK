@@ -28,7 +28,7 @@ export class UXAccess {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().onBoard) {
-                    reject(notImplementedError());
+                    reject(notImplementedError("onBoard"));
                     return;
                 }
 
