@@ -387,8 +387,11 @@ export class DIDAccess {
      * the requesting application is really the owner of appDID, for example by making sure that the redirect
      * url registered in the App's DID Document (public) matches the redirect url defined to receive the response
      * to this connector request (when a third party identity app is used).
+     *
+     * The optional app did string is used to use / create different app instance dids / app id credentials in case several
+     * "app dids" are used in the same real app environment. If none provided, the global connectivity application DID is used.
      */
-    public async generateAppIdCredential(): Promise<VerifiableCredential> {
+    public async generateAppIdCredential(appDID: string = null): Promise<VerifiableCredential> {
         return new Promise((resolve, reject) => {
             ConnectivityHelper.ensureActiveConnector(async () => {
                 if (!connectivity.getActiveConnector().generateAppIdCredential) {
@@ -397,7 +400,7 @@ export class DIDAccess {
                 }
 
                 try {
-                    let storedAppInstanceDID = await this.getOrCreateAppInstanceDID();
+                    let storedAppInstanceDID = await this.getOrCreateAppInstanceDID(appDID);
                     if (!storedAppInstanceDID) {
                         resolve(null);
                         return;
@@ -408,7 +411,7 @@ export class DIDAccess {
                     // No such credential, so we have to create one. Send an intent to get that from the did app
                     logger.log("Starting to generate a new App ID credential.");
 
-                    let credential = await connectivity.getActiveConnector().generateAppIdCredential(appInstanceDID.toString(), connectivity.getApplicationDID());
+                    let credential = await connectivity.getActiveConnector().generateAppIdCredential(appInstanceDID.toString(), appDID ? appDID : connectivity.getApplicationDID());
 
                     // TODO IMPORTANT: Check if the credential was issued by the user himself for security purpose, to make sure
                     // another app is not trying to issue and add a fake app-id-credential credential to user's profile
@@ -469,10 +472,10 @@ export class DIDAccess {
      * a connector and signed with user's DID, after user's approval.
      * The credential contains the real app did used to publish it.
      */
-    public async getExistingAppIdentityCredential(): Promise<VerifiableCredential> {
+    public async getExistingAppIdentityCredential(appDID: string = null): Promise<VerifiableCredential> {
         logger.log("Trying to get an existing app ID credential from storage");
 
-        let storedAppInstanceDID = await this.getOrCreateAppInstanceDID();
+        let storedAppInstanceDID = await this.getOrCreateAppInstanceDID(appDID);
         if (!storedAppInstanceDID) {
             return null;
         }
@@ -501,8 +504,11 @@ export class DIDAccess {
     /**
      * Get the existing application instance DID if it was created before. Otherwise, a new app instance
      * DID is created and the information is stored in persistent storage for later use.
+     *
+     * The optional app did string is used to use / create different app instance dids / app id credentials in case several
+     * "app dids" are used in the same real app environment. If none provided, the global connectivity application DID is used.
      */
-    public async getOrCreateAppInstanceDID(): Promise<{ did: DID, didStore: DIDStore, storePassword: string }> {
+    public async getOrCreateAppInstanceDID(appDID: string = null): Promise<{ did: DID, didStore: DIDStore, storePassword: string }> {
         let didStore: DIDStore = null;
         let did: DID = null;
         let storePassword: string = null;
@@ -514,7 +520,7 @@ export class DIDAccess {
                 ConnectivityHelper.ensureActiveConnector(async () => {
                     try {
                         // Check if we have a app instance DID store saved in our local storage (app manager settings)
-                        let appInstanceDIDInfo = await this.getExistingAppInstanceDIDInfo();
+                        let appInstanceDIDInfo = await this.getExistingAppInstanceDIDInfo(appDID);
                         if (appInstanceDIDInfo) {
                             // DID store found - previously created. Open it and get the app instance did.
                             didStore = await DIDHelper.openDidStore(appInstanceDIDInfo.storeId);
@@ -533,7 +539,7 @@ export class DIDAccess {
                             logger.log("No app instance DID found. Creating a new one");
 
                             // No DID store found. Need to create a new app instance DID.
-                            let didCreationresult = await this.createNewAppInstanceDID();
+                            let didCreationresult = await this.createNewAppInstanceDID(appDID);
                             didStore = didCreationresult.didStore;
                             did = didCreationresult.did;
                             storePassword = didCreationresult.storePassword;
@@ -562,10 +568,12 @@ export class DIDAccess {
     /**
     * Retrieve information about existing app instance info from permanent storage, if any.
     */
-    public async getExistingAppInstanceDIDInfo(): Promise<{ storeId: string, didString: string, storePassword: string }> {
-        let storeId = await globalStorageService.get("dappsdk_appinstancedidstoreid", null, true)
-        let didString = await globalStorageService.get("dappsdk_appinstancedidstring", null, true)
-        let storePassword = await globalStorageService.get("dappsdk_appinstancedidstorepassword", null, true)
+    public async getExistingAppInstanceDIDInfo(appDID: string = null): Promise<{ storeId: string, didString: string, storePassword: string }> {
+        const sandboxingSuffix = appDID ? `_${appDID}` : "";
+
+        let storeId = await globalStorageService.get("dappsdk_appinstancedidstoreid" + sandboxingSuffix, null, true)
+        let didString = await globalStorageService.get("dappsdk_appinstancedidstring" + sandboxingSuffix, null, true)
+        let storePassword = await globalStorageService.get("dappsdk_appinstancedidstorepassword" + sandboxingSuffix, null, true)
 
         if (storeId && didString) {
             return {
@@ -621,11 +629,14 @@ export class DIDAccess {
 
     /**
      * Creates a new application instance DID store, DID, and saves info to permanent storage.
+     *
+     * The optional app did string is used to use / create different app instance dids / app id credentials in case several
+     * "app dids" are used in the same real app environment. If none provided, the global connectivity application DID is used.
      */
-    public async createNewAppInstanceDID(): Promise<{ didStore: DIDStore, didStoreId: string, did: DID, storePassword: string }> {
+    public async createNewAppInstanceDID(appDID: string = null): Promise<{ didStore: DIDStore, didStoreId: string, did: DID, storePassword: string }> {
         const { Mnemonic } = await lazyElastosDIDSDKImport();
         let didCreationResult = await this.fastCreateDID(Mnemonic.ENGLISH);
-        await this.helper.saveAppInstanceDIDInfo(didCreationResult.didStoreId, didCreationResult.did.toString(), didCreationResult.storePassword);
+        await this.helper.saveAppInstanceDIDInfo(appDID, didCreationResult.didStoreId, didCreationResult.did.toString(), didCreationResult.storePassword);
 
         return {
             didStore: didCreationResult.didStore,

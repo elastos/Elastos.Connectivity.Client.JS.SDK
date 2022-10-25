@@ -12,18 +12,22 @@ export class DIDHelper {
     /**
      * Saves app instance did info to permanent storage.
      */
-    public async saveAppInstanceDIDInfo(storeId: string, didString: string, storePassword: string): Promise<void> {
+    public async saveAppInstanceDIDInfo(appDID: string = null, storeId: string, didString: string, storePassword: string): Promise<void> {
         console.log("Saving app instance DID info for store " + storeId + " and did " + didString);
 
-        await globalStorageService.set("dappsdk_appinstancedidstoreid", storeId, true);
-        await globalStorageService.set("dappsdk_appinstancedidstring", didString, true);
+        const sandboxingSuffix = appDID ? `_${appDID}` : "";
+
+        await globalStorageService.set("dappsdk_appinstancedidstoreid" + sandboxingSuffix, storeId, true);
+        await globalStorageService.set("dappsdk_appinstancedidstring" + sandboxingSuffix, didString, true);
         // TODO: Devices with biometric auth enabled may use the password manager to save this password
         // more securely than in local storage.
-        await globalStorageService.set("dappsdk_appinstancedidstorepassword", storePassword, true);
+        await globalStorageService.set("dappsdk_appinstancedidstorepassword" + sandboxingSuffix, storePassword, true);
     }
 
     /**
      * Deletes any data about the active connector context
+     * 
+     * // TODO: per sandboxed app did
      */
     public async cleanupConnectorContext(connector: IConnector) {
         await globalStorageService.unset("dappsdk_appinstancedidstoreid", true);
