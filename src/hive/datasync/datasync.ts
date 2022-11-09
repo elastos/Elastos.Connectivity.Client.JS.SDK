@@ -1,15 +1,12 @@
+import { globalLoggerService as logger } from "../../services/global.logger.service";
 import { globalStorageService as storage } from "../../services/global.storage.service";
-import type { IKeyValueStorage } from "../../interfaces/ikeyvaluestorage";
-import type { ILogger } from "../../interfaces/ilogger";
-import { DefaultKeyValueStorage } from "../../internal/defaultkeyvaluestorage";
-import { globalLoggerService as  logger } from "../../services/global.logger.service";
 
 // TMP FAKE STUBS
 namespace HivePlugin {
     export type JSONObject = any;
     export type EnhancedError = any;
     export class Vault {
-        getDatabase(): any {}
+        getDatabase(): any { }
     }
 
     export function errorOfType(a, b): boolean { return false; }
@@ -289,7 +286,7 @@ export class HiveDataSync {
 
     private async createContextCollection(contextName: string): Promise<void> {
         let collectionName = this.getCollectionNameForContext(contextName);
-        this.logDebug("Making sure the collection "+collectionName+" exists");
+        this.logDebug("Making sure the collection " + collectionName + " exists");
         await this.userVault.getDatabase().createCollection(collectionName);
     }
 
@@ -408,7 +405,7 @@ export class HiveDataSync {
                 this.logDebug("Checking if local entry needs to be synced with vault", localEntry);
                 if (!localEntry) {
                     // Should not happen but just in case...
-                    this.logWarn("Local entry with key "+entryKey+" exists in saved entries list but the entry itself can't be found. This is an abnormal state. Local entry is skipped.");
+                    this.logWarn("Local entry with key " + entryKey + " exists in saved entries list but the entry itself can't be found. This is an abnormal state. Local entry is skipped.");
                 }
                 else {
                     // Do something only if the local entry was modified since last sync to the vault
@@ -579,12 +576,12 @@ export class HiveDataSync {
 
     // Convenient promise-based way to save a setting in the app manager
     private saveSettingsEntry(key: string, value: any): Promise<void> {
-        return storage.set(key, value);
+        return storage.set("hivedatasync", key, value);
     }
 
     // Convenient promise-based way to get a setting from the app manager
     private loadSettingsEntry(key: string): Promise<any> {
-        return storage.get(key, null);
+        return storage.get("hivedatasync", key, null);
     }
 
     private log(message: any, ...params: any) {

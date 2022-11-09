@@ -379,7 +379,7 @@ export class DIDAccess {
 
     /**
      * Requests user's identity wallet to generate a special "app ID" credential. This credential is used
-     * to authorize an application to access some kind of information after prooving who it is.
+     * to authorize an application to access some kind of information after proving who it is.
      * For example, this credential is used by the hive authentication, in order to let apps access only
      * the storage space sandboxed using the application DID, and not other app's storage data.
      *
@@ -571,9 +571,9 @@ export class DIDAccess {
     public async getExistingAppInstanceDIDInfo(appDID: string = null): Promise<{ storeId: string, didString: string, storePassword: string }> {
         const sandboxingSuffix = appDID ? `_${appDID}` : "";
 
-        let storeId = await globalStorageService.get("dappsdk_appinstancedidstoreid" + sandboxingSuffix, null, true)
-        let didString = await globalStorageService.get("dappsdk_appinstancedidstring" + sandboxingSuffix, null, true)
-        let storePassword = await globalStorageService.get("dappsdk_appinstancedidstorepassword" + sandboxingSuffix, null, true)
+        let storeId = await globalStorageService.get(connectivity.getActiveConnector().name, "dappsdk_appinstancedidstoreid" + sandboxingSuffix, null);
+        let didString = await globalStorageService.get(connectivity.getActiveConnector().name, "dappsdk_appinstancedidstring" + sandboxingSuffix, null);
+        let storePassword = await globalStorageService.get(connectivity.getActiveConnector().name, "dappsdk_appinstancedidstorepassword" + sandboxingSuffix, null);
 
         if (storeId && didString) {
             return {

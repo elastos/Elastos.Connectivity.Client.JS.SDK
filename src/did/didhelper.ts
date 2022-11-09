@@ -1,6 +1,7 @@
 import type {
     DID, DIDStore, VerifiableCredential
 } from "@elastosfoundation/did-js-sdk";
+import { connectivity } from "..";
 import type { IConnector } from "../interfaces/connectors";
 import { lazyElastosDIDSDKImport } from "../internal/importhelper";
 import { globalStorageService } from "../services/global.storage.service";
@@ -13,26 +14,22 @@ export class DIDHelper {
      * Saves app instance did info to permanent storage.
      */
     public async saveAppInstanceDIDInfo(appDID: string = null, storeId: string, didString: string, storePassword: string): Promise<void> {
-        console.log("Saving app instance DID info for store " + storeId + " and did " + didString);
+        console.log("Saving app instance DID info for store " + storeId + " and did " + didString + " and app did " + appDID);
 
         const sandboxingSuffix = appDID ? `_${appDID}` : "";
 
-        await globalStorageService.set("dappsdk_appinstancedidstoreid" + sandboxingSuffix, storeId, true);
-        await globalStorageService.set("dappsdk_appinstancedidstring" + sandboxingSuffix, didString, true);
+        await globalStorageService.set(connectivity.getActiveConnector().name, "dappsdk_appinstancedidstoreid" + sandboxingSuffix, storeId);
+        await globalStorageService.set(connectivity.getActiveConnector().name, "dappsdk_appinstancedidstring" + sandboxingSuffix, didString);
         // TODO: Devices with biometric auth enabled may use the password manager to save this password
         // more securely than in local storage.
-        await globalStorageService.set("dappsdk_appinstancedidstorepassword" + sandboxingSuffix, storePassword, true);
+        await globalStorageService.set(connectivity.getActiveConnector().name, "dappsdk_appinstancedidstorepassword" + sandboxingSuffix, storePassword);
     }
 
     /**
      * Deletes any data about the active connector context
-     * 
-     * // TODO: per sandboxed app did
      */
     public async cleanupConnectorContext(connector: IConnector) {
-        await globalStorageService.unset("dappsdk_appinstancedidstoreid", true);
-        await globalStorageService.unset("dappsdk_appinstancedidstring", true);
-        await globalStorageService.unset("dappsdk_appinstancedidstorepassword", true);
+        await globalStorageService.clean(connector.name);
     }
 
     /**

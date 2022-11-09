@@ -32,7 +32,7 @@ class Connectivity {
 
             // Retrieve the existing active connector, if any. If the connector we just registered
             // if the active one, we re-activate it.
-            let activeConnectorName = await globalStorageService.get("activeconnectorname", null);
+            let activeConnectorName = await globalStorageService.get("global", "activeconnectorname", null);
             if (activeConnectorName == connector.name) {
                 logger.log("Reactivating previously saved connector:" + activeConnectorName);
                 this.activeConnector = connector;
@@ -75,7 +75,7 @@ class Connectivity {
         }
 
         // Save connector name to disk for when the app restarts.
-        globalStorageService.set("activeconnectorname", connectorName);
+        globalStorageService.set("global", "activeconnectorname", connectorName);
     }
 
     /**
