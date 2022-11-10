@@ -23,8 +23,9 @@ class GlobalStorageService {
     if (this.index)
       return;
 
-    this.index = JSON.parse(await this.storageLayer.get(INDEX_STORAGE_KEY, null) ?? "[]");
-    console.log("Connectivity files index", this.index);
+    const rawIndex = await this.storageLayer.get(INDEX_STORAGE_KEY, null)
+    this.index = rawIndex ? JSON.parse(rawIndex) : [];
+    //console.log("Connectivity files index", this.index);
   }
 
   private async saveIndex(): Promise<void> {

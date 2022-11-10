@@ -2,7 +2,7 @@
   "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
     "esModuleInterop": true,
-    "target": "es2020",
+    "target": "es2015",
     "module": "esnext",
     "declaration": true,
     "emitDeclarationOnly": true,
