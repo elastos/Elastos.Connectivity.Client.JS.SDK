@@ -40,7 +40,7 @@ export class ConnectivityHelper {
      */
     private static async sendContextToActiveConnector() {
         // Lazy import to reduce bundle sizes
-        const didSdk = (await import("@elastosfoundation/did-js-sdk")).default;
+        const didSdk = (await import("@elastosfoundation/did-js-sdk"));
         if ("setModuleContext" in connectivity.getActiveConnector())
             connectivity.getActiveConnector().setModuleContext(didSdk, connectivity);
     }
