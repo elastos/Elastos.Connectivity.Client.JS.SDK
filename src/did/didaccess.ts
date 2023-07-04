@@ -1,7 +1,7 @@
 import type {
-    DID,
-    DIDStore,
-    JSONObject, VerifiableCredential, VerifiablePresentation
+  DID,
+  DIDStore,
+  JSONObject, VerifiableCredential, VerifiablePresentation
 } from "@elastosfoundation/did-js-sdk";
 import moment from 'moment';
 import Queue from "promise-queue";
@@ -46,6 +46,11 @@ export class DIDAccess {
                     return;
                 }
 
+                // Default: true.
+                if (!query.didMustBePublished) {
+                    query.didMustBePublished = true;
+                }
+
                 try {
                     let presentation = await connectivity.getActiveConnector().getCredentials(query);
                     resolve(presentation);
@@ -86,6 +91,11 @@ export class DIDAccess {
                     if (!request.realm) {
                         request.realm = randomString();
                         shouldManuallyVerifyRealm = true;
+                    }
+
+                    // Default: true.
+                    if (!request.didMustBePublished) {
+                        request.didMustBePublished = true;
                     }
 
                     // Hardcoded format version - we are now at version 2 (after May 2022)
