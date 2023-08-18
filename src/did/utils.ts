@@ -2,8 +2,7 @@
 /**
  * Generates a random ID, suitable for DID store ID format.
  */
-export const generateRandomDIDStoreId = (): string => {
-    let len = 6;
+export const generateRandomDIDStoreId = (len = 6): string => {
     let radix = 16;
 
     var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
@@ -35,5 +34,7 @@ export const generateRandomDIDStoreId = (): string => {
 }
 
 export const randomString = generateRandomDIDStoreId;
+
+export const randomRequestId = () => { return generateRandomDIDStoreId(16) };
 
 export const notImplementedError = (methodName: string): Error => new Error(`Method ${methodName} is not implemented in the connector. Ask the connector developer to update the implementation`);

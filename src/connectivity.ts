@@ -1,6 +1,9 @@
 import { DIDHelper } from "./did/didhelper";
+import { didResponsev2 } from "./did/didresponsev2";
 import type { IConnector } from "./interfaces/connectors/iconnector";
 import type { IGenericUIHandler } from "./interfaces/ui/igenericuihandler";
+import { loadDeferredRequest } from "./internal/deferred-requests";
+import { processResponseFromConnector } from "./internal/response-processors";
 import { globalLoggerService as logger } from "./services/global.logger.service";
 import { globalStorageService } from "./services/global.storage.service";
 import { getGlobalSingleton } from "./singleton";
@@ -37,6 +40,19 @@ class Connectivity {
                 logger.log("Reactivating previously saved connector:" + activeConnectorName);
                 this.activeConnector = connector;
             }
+
+            didResponsev2.registerResponseProcessors();
+
+            // Listen to asynchronous responses from connectors, (if implemented)
+            connector.registerResponseHandler?.(async (requestId, responsePayload) => {
+                const deferredRequest = await loadDeferredRequest<any>(requestId);
+                if (!deferredRequest) {
+                    logger.warn("Connectivity SDK found no saved deferred request for request ID", requestId);
+                    return;
+                }
+
+                processResponseFromConnector(deferredRequest, responsePayload);
+            })
         }
     }
 
@@ -92,7 +108,7 @@ class Connectivity {
         // For now, if an elastos provider is injected in window.elastos, we always use it by
         // default.
         if ("elastos" in window)
-            return window["elastos"];
+            return <any>window["elastos"];
         else
             return this.activeConnector;
     }
