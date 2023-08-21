@@ -1,6 +1,6 @@
 {
   "name": "@elastosfoundation/elastos-connectivity-sdk-js",
-  "version": "2.0.1-next",
+  "version": "2.0.2-next",
   "description": "Elastos JS connectivity SDK to bridge mobile Apps with Elastos wallets",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -35,6 +35,7 @@
     "moment": "^2.29.1",
     "promise-queue": "^2.2.5",
     "rxjs": "^7.5.1",
+    "svelte": "^3.35.0",
     "svelte-copy-to-clipboard": "^0.2.5",
     "svelte-i18n": "^3.3.6",
     "web3-core": "^1.6.1"
@@ -59,7 +60,6 @@
     "sass": "^1.32.8",
     "sass-loader": "^11.0.1",
     "style-loader": "^2.0.0",
-    "svelte": "^3.35.0",
     "svelte-check": "^1.2.5",
     "svelte-loader": "^3.0.0",
     "svelte-preprocess": "^4.6.9",
