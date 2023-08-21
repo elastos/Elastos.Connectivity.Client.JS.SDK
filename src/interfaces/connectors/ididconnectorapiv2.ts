@@ -1,4 +1,5 @@
-import type { CredentialDisclosureRequest } from "../../did";
+import type { VerifiableCredential } from "@elastosfoundation/did-js-sdk";
+import type { CredentialDisclosureRequest, ImportCredentialOptions } from "../../did";
 
 /**
  * NOTE: All methods are marked as optional to avoid breaking builds when adding new methods to the
@@ -15,4 +16,5 @@ import type { CredentialDisclosureRequest } from "../../did";
  */
 export interface IDIDConnectorAPIV2 {
     requestCredentialsV2?(requestId: string, request: CredentialDisclosureRequest): Promise<void>;
+    importCredentialsV2?(requestId: string, credentials: VerifiableCredential[], options?: ImportCredentialOptions): Promise<void>;
 }

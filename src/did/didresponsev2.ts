@@ -3,7 +3,8 @@ import type { DeferredRequest } from "../internal/deferred-requests";
 import { registerResponseProcessor } from "../internal/response-processors";
 import { getGlobalSingleton } from "../singleton";
 import type { RequestCredentialsDeferredRequestData } from "./model/deferred-request-data";
-import { requestCredentialsResponseHandler } from "./response-handlers-v2";
+import type { ImportedCredential } from "./model/importedcredential";
+import { importCredentialsResponseHandler, requestCredentialsResponseHandler } from "./response-handlers-v2";
 
 /**
  * Internal class to the connectivity SDK. Processes responsed from connectors and emits
@@ -12,6 +13,7 @@ import { requestCredentialsResponseHandler } from "./response-handlers-v2";
 class DIDResponseV2 {
     public async registerResponseProcessors() {
         registerResponseProcessor("requestCredentials", this.processRequestCredentialsResponse);
+        registerResponseProcessor("importCredentials", this.processImportCredentialsResponse);
     }
 
     private async processRequestCredentialsResponse(request: DeferredRequest<RequestCredentialsDeferredRequestData>, presentation: VerifiablePresentation): Promise<void> {
@@ -29,6 +31,21 @@ class DIDResponseV2 {
 
             // Successful response, sent to the app, if any listener
             requestCredentialsResponseHandler.next([request.appData, presentation]);
+        }
+        else {
+            // Cancelled?
+            requestCredentialsResponseHandler.next([request.appData, null]);
+        }
+    }
+
+    private async processImportCredentialsResponse(request: DeferredRequest<RequestCredentialsDeferredRequestData>, credentials: ImportedCredential[]): Promise<void> {
+        if (credentials) {
+            // Successful response, sent to the app, if any listener
+            importCredentialsResponseHandler.next([request.appData, credentials]);
+        }
+        else {
+            // Cancelled?
+            importCredentialsResponseHandler.next([request.appData, null]);
         }
     }
 }

@@ -7,6 +7,7 @@ import postcss from 'rollup-plugin-postcss';
 import sveltePreprocess from "svelte-preprocess";
 //import analyze from 'rollup-plugin-analyzer';
 import typescript from "@rollup/plugin-typescript";
+import pkg from './package.json';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -24,11 +25,7 @@ export default {
 			file: 'dist.esm/index.js'
 		}
 	],
-	external: [
-		"@elastosfoundation/did-js-sdk",
-		"moment",
-		"rxjs"
-	],
+	external: Object.keys(pkg.dependencies || {}), // Exclude all package.json dependencies
 	plugins: [
 		svelte({
 			preprocess: sveltePreprocess({ sourceMap: !production }),

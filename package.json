@@ -1,6 +1,6 @@
 {
   "name": "@elastosfoundation/elastos-connectivity-sdk-js",
-  "version": "2.0.0-next",
+  "version": "2.0.1-next",
   "description": "Elastos JS connectivity SDK to bridge mobile Apps with Elastos wallets",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/elastos/Elastos.Connectivity.Client.JS.SDK",
   "dependencies": {
-    "@elastosfoundation/did-js-sdk": "^2.2.7",
+    "@elastosfoundation/did-js-sdk": "^2.2.14",
     "@types/promise-queue": "^2.2.0",
     "moment": "^2.29.1",
     "promise-queue": "^2.2.5",
