@@ -8,6 +8,7 @@ import sveltePreprocess from "svelte-preprocess";
 //import analyze from 'rollup-plugin-analyzer';
 import typescript from "@rollup/plugin-typescript";
 import pkg from './package.json';
+import eslint from '@rollup/plugin-eslint';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -53,6 +54,10 @@ export default {
 			declaration: false,
 			sourceMap: true,
 			inlineSources: !production
+		}),
+
+		eslint({
+			throwOnError: true, // This option throws an error if there are eslint errors/warnings
 		}),
 
 		// If we're building for production (npm run build

@@ -1,7 +1,7 @@
 import type {
-  DID,
-  DIDStore,
-  JSONObject, VerifiableCredential, VerifiablePresentation
+    DID,
+    DIDStore,
+    JSONObject, VerifiableCredential, VerifiablePresentation
 } from "@elastosfoundation/did-js-sdk";
 import moment from 'moment';
 import Queue from "promise-queue";
@@ -619,7 +619,7 @@ export class DIDAccess {
 
                 // Store created, now init the root identity
                 let storePass = this.helper.generateRandomPassword();
-                let rootIdentity = RootIdentity.createFromMnemonic(mnemonic, null, didStore, storePass);
+                let rootIdentity = await RootIdentity.createFromMnemonic(mnemonic, null, didStore, storePass);
 
                 // Now add a DID
                 let didDocument = await rootIdentity.newDid(storePass);

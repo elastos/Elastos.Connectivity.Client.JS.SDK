@@ -1,7 +1,7 @@
 import type {
     DID, DIDStore, VerifiableCredential
 } from "@elastosfoundation/did-js-sdk";
-import { connectivity } from "..";
+import { connectivity, logger } from "..";
 import type { IConnector } from "../interfaces/connectors";
 import { lazyElastosDIDSDKImport } from "../internal/importhelper";
 import { globalStorageService } from "../services/global.storage.service";
@@ -14,7 +14,7 @@ export class DIDHelper {
      * Saves app instance did info to permanent storage.
      */
     public async saveAppInstanceDIDInfo(appDID: string = null, storeId: string, didString: string, storePassword: string): Promise<void> {
-        console.log("Saving app instance DID info for store " + storeId + " and did " + didString + " and app did " + appDID);
+        logger.log("Saving app instance DID info for store " + storeId + " and did " + didString + " and app did " + appDID);
 
         const sandboxingSuffix = appDID ? `_${appDID}` : "";
 
@@ -69,7 +69,7 @@ export class DIDHelper {
             }
             catch (err) {
                 reject(err);
-            };
+            }
         });
     }
 

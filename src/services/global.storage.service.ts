@@ -81,7 +81,7 @@ class GlobalStorageService {
     return this.set(context, key, JSON.stringify(value));
   }
 
-  public async getJSON(context: string, key: string, defaultValue: Object | null): Promise<any> {
+  public async getJSON(context: string, key: string, defaultValue: any | null): Promise<any> {
     return JSON.parse(await this.get(context, key, JSON.stringify(defaultValue)));
   }
 }

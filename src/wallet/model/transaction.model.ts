@@ -1,6 +1,6 @@
 export enum TransactionStatus {
     Cancelled = "cancelled",
-    Published = "cancelled",
+    Published = "published",
     Error = "error"
 }
 
