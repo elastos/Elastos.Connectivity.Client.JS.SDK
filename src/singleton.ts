@@ -1,13 +1,13 @@
-export function getGlobalSingleton<T>(context: string, onSingletonCreation: ()=>T): T {
-    if (!window["elastosconnectivity"])
-        window["elastosconnectivity"] = {};
+export function getGlobalSingleton<T>(context: string, onSingletonCreation: () => T): T {
+    if (!globalThis["elastosconnectivity"])
+        globalThis["elastosconnectivity"] = {};
 
-    if (!window["elastosconnectivity"][context]) {
+    if (!globalThis["elastosconnectivity"][context]) {
         // Create a singleton and save it globally
         let singleton = onSingletonCreation();
-        window["elastosconnectivity"][context] = singleton;
+        globalThis["elastosconnectivity"][context] = singleton;
         return singleton;
     } else {
-        return window["elastosconnectivity"][context];
+        return globalThis["elastosconnectivity"][context];
     }
 }
