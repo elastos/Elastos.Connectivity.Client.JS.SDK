@@ -62,7 +62,7 @@ export default {
 
 		// If we're building for production (npm run build
 		// instead of npm run dev), minify
-		production && terser(),
+		// trying to avoid optimization errors such as "_ : logger" // production && terser(),
 
 		/*analyze({
 				limit: 10

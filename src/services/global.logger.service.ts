@@ -1,11 +1,10 @@
 import type { ILogger } from "../interfaces";
 import { DefaultLogger } from "../internal/defaultlogger";
-import { getGlobalSingleton } from "../singleton";
 
 class GlobalLoggerService {
     public logger: ILogger = new DefaultLogger();
 
-    constructor() {}
+    constructor() { }
 
     /**
      * Overrides the default console logger with a custom logger.
@@ -27,5 +26,5 @@ class GlobalLoggerService {
     }
 }
 
-export const globalLoggerService = getGlobalSingleton<GlobalLoggerService>("logger", ()=>new GlobalLoggerService());
+export const globalLoggerService = new GlobalLoggerService();
 
